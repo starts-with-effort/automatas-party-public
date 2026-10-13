@@ -3,6 +3,7 @@
   "version": "0.13.2",
   "private": true,
   "description": "Quiz por equipos con objetos y minijuegos en tiempo real (exposición del curso).",
+  "license": "MIT",
   "type": "module",
   "main": "server/index.js",
   "engines": {

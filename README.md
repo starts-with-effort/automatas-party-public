@@ -103,8 +103,8 @@ El contrato entre cliente y servidor está en [docs/PROTOCOL.md](docs/PROTOCOL.m
 Requiere [Node.js](https://nodejs.org) 22 o superior.
 
 ```bash
-git clone https://github.com/starts-with-effort/automatas-party.git
-cd automatas-party
+git clone https://github.com/starts-with-effort/automatas-party-publico.git
+cd automatas-party-publico
 npm install
 npm run dev          # http://localhost:3000, se reinicia al guardar cambios
 ```
@@ -253,3 +253,11 @@ Node.js 22, [Express](https://expressjs.com) 5, [Socket.IO](https://socket.io) 4
 [Zod](https://zod.dev) para validar la configuración y los mensajes,
 [GSAP](https://gsap.com) para las animaciones de las diapositivas y `qrcode` para el código de
 entrada. El cliente es HTML, CSS y JavaScript sin paso de compilación.
+
+## Licencia
+
+[MIT](LICENSE): puedes usarlo, copiarlo, modificarlo y distribuirlo para lo que quieras, también con
+fines comerciales; solo hay que conservar el aviso de la licencia. Se entrega tal cual, sin garantías.
+
+Las fuentes incluidas (Lilita One y Nunito) son de sus autores y se distribuyen con la
+[SIL Open Font License](https://openfontlicense.org).
