@@ -1,0 +1,332 @@
+/* Estilos propios de cada diapositiva (posiciones en px del cuerpo: 1728 × ~790). Lo común está en
+   deck.css y las vistas del simulador en views/views.css. */
+
+.region > .card { margin: 0; }
+.big-chip { font-size: 44px; padding: 6px 26px; }
+.chips { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 18px; }
+.chips .chip { font-size: 30px; }
+.card p { margin: 0 0 10px; }
+.card p:last-child { margin-bottom: 0; }
+
+/* ------------------------------------------------------------ 1 · portada */
+.kicker { font-size: 32px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; color: var(--pink); }
+.cover-title { margin: 10px 0 18px; font-family: var(--display); font-weight: 400; font-size: 168px; line-height: 0.95; }
+.cover-sub { margin: 0 0 40px; font-size: 44px; color: var(--muted); }
+.cover-team { display: flex; flex-wrap: wrap; gap: 16px; }
+.cover-team .chip { font-size: 32px; background: var(--sun); }
+.cover-art .stack-label { display: none; }
+.agenda h2 { margin: 0 0 14px; font-family: var(--display); font-weight: 400; font-size: 56px; }
+.agenda ol { margin: 0; padding-left: 50px; display: grid; gap: 14px; font-size: 38px; }
+
+/* ------------------------------------------------------------ 2 · autómatas finitos */
+.fa-panel { padding: 18px 28px 20px; }
+.fa-head { display: flex; align-items: center; gap: 16px; }
+.fa-head .display-font { font-size: 46px; }
+.fa-head .chip { font-size: 28px; }
+.fa-verdict { margin-left: auto; }
+.fa-diagram { height: 400px; }
+.fa-foot { display: flex; align-items: center; gap: 28px; }
+.fa-caption { margin: 0 0 36px; font-size: 30px; line-height: 1.3; }
+.fa-memory { padding: 22px 36px; font-size: 40px; text-align: center; }
+
+/* ------------------------------------------------------------ 3 · motivación */
+.lang, .lang-row { display: flex; align-items: baseline; gap: 30px; flex-wrap: wrap; }
+.lang-row .chip { align-self: center; font-size: 30px; }
+.counter-row { display: flex; align-items: center; }
+.mstate {
+  flex: none;
+  width: 118px;
+  height: 118px;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  border: 5px solid var(--ink);
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  line-height: 1;
+}
+.mstate b { font-size: 44px; }
+.mstate span { font-size: 28px; color: var(--muted); }
+.mstate.more { border-style: dashed; box-shadow: none; background: transparent; }
+.marrow { position: relative; flex: none; width: 110px; height: 5px; background: var(--ink); }
+.marrow::after { content: ""; position: absolute; right: -2px; top: -9px; border: 11px solid transparent; border-left: 18px solid var(--ink); border-right: 0; }
+.marrow i { position: absolute; left: 0; right: 0; top: -48px; text-align: center; font-style: normal; font-weight: 900; }
+.counter-caption { margin: 22px 0 0; font-size: 36px; color: var(--muted); }
+.callout .big, .idea .big { display: block; margin-bottom: 12px; }
+
+/* ------------------------------------------------------------ 4 · la idea */
+.idea-stack .tile-Z0 span { visibility: hidden; }
+.idea-intro { font-size: 40px; line-height: 1.35; }
+.idea-intro .muted { font-size: 32px; }
+.idea-rule { display: flex; gap: 24px; }
+.idea-move { padding: 14px 28px; border: 4px solid var(--ink); border-radius: 18px; box-shadow: var(--shadow-sm); font-size: 36px; }
+.idea-sum { font-size: 40px; text-align: center; }
+.idea-sum .muted { font-size: 32px; }
+
+/* ------------------------------------------------------------ 5 · anatomía */
+.anatomy { display: flex; align-items: center; justify-content: center; gap: 60px; }
+.anatomy-label { display: flex; align-items: baseline; gap: 18px; font-size: 120px; font-weight: 900; line-height: 1.1; }
+.anatomy-label .sep { color: var(--muted); }
+.part { padding: 0 18px; border-radius: 18px; }
+.pa { --c: var(--pink); }
+.px { --c: var(--sky); }
+.pg { --c: var(--sun); }
+.tq { --c: var(--sun); }
+.tw { --c: var(--pink); }
+.tg { --c: var(--sky); }
+.part, .triple .tq, .triple .tw, .triple .tg { border-bottom: 10px solid var(--c); }
+.anatomy-delta { font-size: 44px; color: var(--muted); }
+.anatomy-notes, .triple-notes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.anote { padding: 18px 24px; border: 4px solid var(--ink); border-top: 14px solid var(--c); border-radius: 18px; background: var(--surface); font-size: 32px; line-height: 1.3; }
+.anote b { font-size: 40px; margin-right: 10px; }
+.demo-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px; }
+.demo-head .display-font { font-size: 42px; }
+.demo-head .chip { font-size: 30px; }
+.demo-body { display: flex; align-items: flex-end; gap: 20px; }
+.demo-stack { width: 240px; height: 230px; position: relative; padding-left: 90px; }
+.demo-stack .stack-label { display: none; }
+.demo-after { font-size: 28px; line-height: 1.5; }
+
+/* ------------------------------------------------------------ 6 · definición */
+.tuple { text-align: center; font-size: 76px; font-weight: 900; }
+.tp { padding: 0 8px; border-radius: 12px; }
+.defgroup { margin-bottom: 26px; }
+.defrow { display: grid; grid-template-columns: 90px 1fr auto; align-items: baseline; gap: 18px; font-size: 36px; line-height: 1.45; }
+.defrow b { font-size: 44px; text-align: center; }
+.defrow em { font-style: normal; font-weight: 900; color: var(--pink); }
+.defmath { margin-left: 108px; font-size: 34px; font-weight: 800; }
+.defmath.small { color: var(--muted); }
+.def-caption { text-align: center; }
+.callout-set { font-size: 34px; line-height: 1.35; }
+
+/* ------------------------------------------------------------ 7 · notación, 12 · wwᴿ */
+.legend { display: flex; align-items: center; gap: 18px; font-size: 36px; padding: 18px 32px; }
+.legend .chip { font-size: 34px; }
+.captions .cap { position: absolute; left: 0; right: 0; top: 0; font-size: 36px; line-height: 1.35; }
+
+/* ------------------------------------------------------------ 8 · descripciones */
+.id-lead { text-align: center; font-size: 44px; }
+.triple { text-align: center; font-size: 132px; font-weight: 900; line-height: 1.1; }
+.triple .tq, .triple .tw, .triple .tg { padding: 0 10px; }
+.triple-notes .anote { text-align: center; }
+.triple-notes .anote b { margin-right: 0; }
+.id-general { display: flex; align-items: center; justify-content: center; gap: 44px; font-size: 40px; }
+.id-general .triple { font-size: 112px; }
+.id-legend { display: flex; align-items: center; gap: 22px; font-size: 36px; }
+.id-legend .chip { font-size: 30px; }
+.id-legend .tq, .id-legend .tw, .id-legend .tg { padding: 0 4px; border-bottom: 6px solid var(--c); }
+.rel { display: flex; flex-direction: column; padding: 24px 36px; }
+.rel-title { font-size: 44px; margin-bottom: 10px; }
+.rel-words { font-size: 34px; line-height: 1.45; }
+.rel .id { white-space: nowrap; }
+.rel-write { margin-top: auto; font-size: 42px; font-weight: 900; white-space: nowrap; }
+.rel-write .turn { font-size: 52px; vertical-align: -4px; }
+.rel-read { margin-top: 14px; font-size: 30px; color: var(--muted); }
+.rel-read .chip { margin-right: 8px; font-size: 36px; line-height: 1.1; color: var(--ink); }
+.rule { text-align: center; }
+.rule-line { margin: 10px 0; font-size: 64px; font-weight: 900; }
+.ra { color: var(--pink); }
+.rx { background: var(--sun); border-radius: 10px; padding: 0 8px; }
+.rb { color: var(--muted); }
+.turn { color: var(--pink); margin: 0 12px; }
+
+/* ------------------------------------------------------------ 10 · rechazo, R2 */
+.rechazo-intro { font-size: 40px; }
+.trace-col { display: flex; flex-direction: column; gap: 14px; min-height: 540px; }
+.trace-col.short { min-height: 470px; }
+.trace-head { display: flex; justify-content: space-between; align-items: center; }
+.trace-ids .id-row { padding: 0 10px; }
+.trace-col .verdict { align-self: flex-start; margin-top: auto; font-size: 32px; }
+.trace-col .verdict b { font-size: 40px; }
+.rule-card { font-size: 38px; text-align: center; }
+.leak { font-size: 36px; line-height: 1.5; }
+.leak .chip { font-size: 32px; margin: 0 8px; }
+
+/* ------------------------------------------------------------ 14 · aceptación */
+.crit { display: flex; flex-direction: column; padding: 20px 32px; }
+.crit-title { font-size: 42px; margin-bottom: 6px; }
+.crit-words { font-size: 34px; line-height: 1.35; }
+.crit-words .muted { font-size: 30px; }
+.crit-check { display: grid; justify-items: start; }
+.crit-check .chip { grid-area: 1 / 1; font-size: 28px; }
+.crit-math { margin-top: auto; font-size: 30px; font-weight: 900; white-space: nowrap; }
+.acc-end { display: flex; flex-direction: column; padding: 22px 34px; }
+.acc-end-title { font-size: 38px; }
+.acc-end-body { flex: 1; display: flex; align-items: flex-end; justify-content: space-between; }
+.acc-end-state { display: grid; justify-items: start; gap: 12px; padding-bottom: 50px; font-size: 34px; }
+.acc-end-state .chip { font-size: 44px; }
+.acc-end-stack { width: 250px; height: 290px; }
+
+/* ------------------------------------------------------------ 11 · wwᴿ: la estrategia */
+.halves { display: flex; gap: 8px; }
+.half { width: 160px; border-bottom: 8px solid var(--c); text-align: center; font-size: 30px; font-weight: 900; }
+.half.first { --c: var(--sun); }
+.half.second { --c: var(--lilac); }
+.mitades-caps .cap { font-size: 38px; }
+
+/* ------------------------------------------------------------ 16 y 17 · teoremas */
+.theorem { padding: 14px 32px; font-size: 36px; }
+.slide[data-id^="teorema"] .verdict { font-size: 32px; padding: 12px 26px; }
+.slide[data-id^="teorema"] .verdict b { font-size: 40px; }
+.explain .cap { position: absolute; left: 0; right: 0; top: 0; font-size: 38px; line-height: 1.35; }
+
+/* ------------------------------------------------------------ 18 · equivalencia */
+.family { text-align: center; padding: 34px; }
+.family .display-font { font-size: 48px; }
+.family .muted { font-size: 32px; }
+.family-arrows { display: grid; gap: 34px; padding-top: 34px; }
+.farrow { position: relative; height: 6px; background: var(--pink); }
+.farrow span { position: absolute; left: 0; right: 0; top: -50px; text-align: center; font-weight: 900; font-size: 32px; }
+.farrow.to-left::before { content: ""; position: absolute; left: -4px; top: -11px; border: 14px solid transparent; border-right: 22px solid var(--pink); border-left: 0; }
+.farrow.to-right::after { content: ""; position: absolute; right: -4px; top: -11px; border: 14px solid transparent; border-left: 22px solid var(--pink); border-right: 0; }
+.farrow.to-right span { top: 16px; }
+.merged { text-align: center; font-size: 34px; padding: 40px; }
+.merged .big { display: block; margin-bottom: 10px; }
+.compare table { width: 100%; border-collapse: collapse; font-size: 32px; }
+.compare th, .compare td { padding: 8px 18px; text-align: left; border-bottom: 3px solid var(--paper); }
+.compare thead th { font-family: var(--display); font-weight: 400; font-size: 38px; }
+.compare tbody th { color: var(--muted); width: 230px; }
+.compare td:last-child { font-weight: 900; }
+.next-topic { font-size: 34px; display: flex; gap: 20px; align-items: center; }
+
+/* ------------------------------------------------------------ 19 · cierre */
+.ideas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+.idea-card { display: flex; gap: 20px; align-items: flex-start; font-size: 34px; line-height: 1.35; min-height: 330px; }
+.idea-card b { flex: none; display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: var(--sun); border: 4px solid var(--ink); font-size: 36px; }
+.questions { font-size: 150px; text-align: center; }
+.quiz { display: flex; align-items: center; gap: 26px; padding: 22px; }
+.quiz img { flex: none; border: 4px solid var(--ink); border-radius: 16px; background: #fff; padding: 8px; }
+.quiz .big { display: block; font-size: 44px; margin-bottom: 8px; }
+.quiz-url { font-size: 28px; overflow-wrap: anywhere; }
+
+/* ------------------------------------------------------------ el quiz (Q1 a Q7) */
+.qz-lead { font-size: 40px; text-align: center; }
+.qz-lead .chip { margin-right: 12px; font-size: 32px; }
+.qz-dot { flex: none; display: block; width: 84px; height: 84px; border: 5px solid var(--ink); border-radius: 50%; box-shadow: var(--shadow-sm); }
+.qz-dot.big { width: 120px; height: 120px; }
+.qz-star { display: block; width: 100%; overflow: visible; }
+.qz-star .shade { fill: var(--ink); stroke: var(--ink); stroke-width: 6; stroke-linejoin: round; }
+.qz-star .arm { fill: #ffffff; stroke: #ffffff; stroke-width: 0.8; stroke-linejoin: round; }
+.qz-star .arm.on { fill: var(--sun); stroke: var(--sun); }
+.qz-star .outline { fill: none; stroke: var(--ink); stroke-width: 6; stroke-linejoin: round; }
+
+/* Q1 · rondas */
+.qz-rounds { display: flex; justify-content: center; align-items: flex-start; }
+.qz-round { flex: none; display: grid; justify-items: center; gap: 10px; width: 150px; }
+.qz-round b { display: block; width: 124px; height: 124px; line-height: 114px; text-align: center; border: 5px solid var(--ink); border-radius: 50%; background: var(--surface); box-shadow: var(--shadow-sm); font-size: 48px; }
+.qz-round.final b { outline: 5px solid var(--ink); outline-offset: -18px; }
+.qz-round span { font-size: 30px; font-weight: 800; color: var(--muted); }
+.qz-link { position: relative; flex: none; width: 96px; height: 5px; margin-top: 60px; background: var(--ink); }
+.qz-link::after { content: ""; position: absolute; right: -2px; top: -9px; border: 11px solid transparent; border-left: 18px solid var(--ink); border-right: 0; }
+.qz-parts-head { margin-bottom: 24px; font-size: 38px; }
+.qz-parts-head .chip { margin-right: 14px; font-size: 34px; }
+.qz-parts-row { display: flex; align-items: stretch; }
+.qz-part { flex: 1; display: grid; justify-items: center; align-content: center; gap: 12px; min-height: 180px; padding: 16px; border: 4px solid var(--ink); border-top: 16px solid var(--c); border-radius: 22px; background: var(--surface); box-shadow: var(--shadow); font-size: 38px; font-weight: 900; text-align: center; line-height: 1.15; }
+.qz-part b { display: grid; place-items: center; width: 60px; height: 60px; border: 4px solid var(--ink); border-radius: 50%; background: var(--c); font-size: 34px; }
+.qz-part.ask { --c: var(--sky); }
+.qz-part.item { --c: var(--lilac); }
+.qz-part.game { --c: var(--mint); }
+.qz-then { position: relative; flex: none; align-self: center; width: 34px; height: 5px; margin: 0 12px 0 8px; background: var(--ink); }
+.qz-then::after { content: ""; position: absolute; right: -8px; top: -9px; border: 11px solid transparent; border-left: 16px solid var(--ink); border-right: 0; }
+.qz-last { display: flex; align-items: center; justify-content: center; gap: 24px; font-size: 40px; }
+.qz-last .chip { font-size: 34px; }
+
+/* Q2 · preguntas */
+.qz-device { display: grid; justify-items: center; gap: 14px; }
+.qz-phone-name { font-size: 44px; }
+.qz-phone { width: 340px; height: 560px; padding: 22px 16px; border: 6px solid var(--ink); border-radius: 46px; background: var(--ink); box-shadow: var(--shadow); }
+.qz-screen { height: 100%; padding: 22px 20px; border-radius: 26px; background: var(--paper); }
+.qz-content { display: flex; flex-direction: column; justify-content: center; gap: 16px; height: 100%; }
+.qz-screen .chip { align-self: flex-start; font-size: 28px; }
+.qz-screen p { margin: 0; font-size: 36px; font-weight: 900; line-height: 1.25; }
+.qz-option { padding: 22px 18px; border: 4px solid var(--ink); border-radius: 18px; background: var(--c); box-shadow: var(--shadow-sm); font-size: 32px; font-weight: 900; }
+.qz-option.o0 { --c: var(--pink); color: #fff; }
+.qz-option.o1 { --c: var(--sky); }
+.qz-option.o2 { --c: var(--sun); }
+.qz-option.o3 { --c: var(--mint); }
+.qz-phone-role { font-size: 36px; }
+.qz-talk { font-size: 40px; text-align: center; color: var(--pink); transform: rotate(-8deg); }
+.qz-rule { font-size: 38px; line-height: 1.3; }
+.qz-rule .muted { font-size: 32px; }
+
+/* Q3 · objetos */
+.qz-trays { display: flex; justify-content: space-between; }
+.qz-tray { display: grid; justify-items: center; gap: 4px; padding: 8px 14px 10px; border: 4px solid var(--ink); border-radius: 22px; background: var(--surface); box-shadow: var(--shadow-sm); }
+.qz-tray b { font-size: 28px; }
+.qz-tray > div { display: flex; gap: 6px; }
+.qz-tray img { display: block; width: 72px; height: 72px; }
+.qz-tray.special { min-width: 170px; }
+.qz-items-intro { text-align: center; font-size: 46px; line-height: 1.35; padding: 44px; }
+.qz-items-intro .muted { font-size: 36px; }
+.qz-page { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.qz-page.def { grid-template-columns: repeat(3, 1fr); gap: 28px; }
+.qz-item { display: grid; grid-template-columns: 88px 1fr; align-content: start; align-items: center; gap: 12px 16px; min-height: 300px; padding: 18px 22px; }
+.qz-item img { display: block; width: 88px; height: 88px; }
+.qz-item-head { display: grid; justify-items: start; gap: 6px; }
+.qz-item-head .display-font { font-size: 34px; line-height: 1.1; }
+.qz-item p { grid-column: 1 / -1; font-size: 32px; line-height: 1.25; }
+.qz-kind { padding: 0 14px; font-size: 28px; box-shadow: none; }
+.qz-kind.fis { background: var(--sun); }
+.qz-kind.hex { background: var(--lilac); }
+.qz-page.def .qz-item { grid-template-columns: 120px 1fr; min-height: 280px; padding: 26px 30px; }
+.qz-page.def .qz-item img { width: 120px; height: 120px; }
+.qz-page.def .qz-item-head .display-font { font-size: 42px; }
+.qz-page.def .qz-item p { font-size: 36px; }
+.qz-once { grid-column: 1 / -1; justify-self: center; margin-top: 30px; font-size: 38px; }
+.qz-special { display: flex; align-items: center; gap: 40px; padding: 40px 50px; font-size: 40px; }
+.qz-special img { flex: none; width: 220px; height: 220px; }
+.qz-special .display-font { font-size: 84px; line-height: 1; margin-bottom: 14px; }
+.qz-special .muted { font-size: 34px; }
+
+/* Q4 · formatos */
+.qz-format { display: flex; flex-direction: column; align-items: center; text-align: center; font-size: 38px; }
+.qz-format .display-font { font-size: 64px; margin-bottom: 8px; }
+.qz-format-art { flex: 1; display: flex; align-items: center; justify-content: center; align-self: stretch; }
+.qz-format-art.solo { gap: 36px; }
+.qz-format-art.pairs { gap: 44px; }
+.qz-format-art.pairs span { display: flex; padding: 16px 20px; border: 5px dashed var(--ink); border-radius: 999px; background: var(--paper); }
+.qz-format-art.pairs .qz-dot + .qz-dot { margin-left: -18px; }
+.qz-format-art.secret { font-size: 230px; line-height: 1; color: var(--sun); }
+.qz-prize { display: flex; align-items: center; justify-content: center; gap: 24px; font-size: 40px; }
+.qz-prize .qz-star { flex: none; width: 84px; }
+
+/* Q5 · estrellas */
+.qz-worth { text-align: center; }
+.qz-worth .chip { font-size: 36px; }
+.qz-star-card { font-size: 42px; line-height: 1.3; }
+.qz-star-card .big { font-size: 68px; margin-bottom: 6px; }
+.qz-big-star .shade, .qz-big-star .outline { stroke-width: 3.4; }
+
+/* Q6 · duelo */
+.qz-versus { display: flex; align-items: center; justify-content: center; gap: 70px; }
+.qz-side { display: flex; align-items: center; gap: 26px; font-size: 34px; font-weight: 800; line-height: 1.2; }
+.qz-side img { width: 120px; height: 120px; }
+.qz-side .qz-star { flex: none; width: 110px; }
+.qz-side:first-child span { text-align: left; }
+.qz-side:last-child span { text-align: right; }
+.qz-vs { font-size: 110px; line-height: 1; color: var(--pink); -webkit-text-stroke: 4px var(--ink); paint-order: stroke fill; }
+.qz-hands { display: flex; align-items: center; justify-content: center; gap: 70px; padding: 22px 40px; font-size: 38px; line-height: 1.3; }
+.qz-hands .muted { font-size: 34px; }
+.qz-hand-row { flex: none; display: flex; gap: 34px; }
+.qz-hand { display: grid; justify-items: center; font-size: 32px; }
+.qz-hand svg { display: block; width: 130px; height: 130px; }
+.qz-outcome { font-size: 36px; line-height: 1.3; }
+.qz-outcome .display-font { font-size: 46px; margin-bottom: 6px; }
+
+/* Q7 · aviso */
+.qz-warn { text-align: center; font-size: 40px; padding: 34px; }
+.qz-warn .display-font { font-size: 76px; line-height: 1.1; margin-bottom: 10px; }
+.qz-reasons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+.qz-reasons .card { min-height: 230px; font-size: 40px; line-height: 1.25; }
+.qz-reasons .muted { font-size: 32px; }
+.qz-grade { text-align: center; font-size: 38px; padding: 36px; }
+.qz-grade .display-font { font-size: 62px; line-height: 1.1; margin-bottom: 14px; color: var(--sun); }
+
+/* ------------------------------------------------------------ R3 y R4 */
+.prop-title { font-size: 44px; margin-bottom: 14px; }
+.prop-math { font-size: 46px; font-weight: 900; margin-bottom: 10px; }
+.prop .muted { font-size: 30px; }
+.caveat { font-size: 36px; }
+.lost { font-size: 150px; color: var(--pink); text-align: center; }
+.limit-cap { position: absolute; font-size: 38px; }

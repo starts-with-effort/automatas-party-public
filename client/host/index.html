@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Host · Autómatas Party</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/shared/base.css">
+  <style>
+    main { max-width: 1100px; }
+    .login { max-width: 480px; width: 100%; margin: 10vh auto 0; }
+    summary { cursor: pointer; font-weight: 700; }
+    textarea.input { min-height: 120px; padding: 10px 12px; resize: vertical; }
+    .controls .button { flex: 1 1 140px; }
+    .upcoming { margin: 0; padding-left: 1.2em; color: var(--muted); }
+    td { vertical-align: top; white-space: normal; }
+    h3 { margin: 0; font-size: 1rem; }
+    .adjust { flex-wrap: nowrap; }
+    .adjust .input { width: 6em; }
+    td.nowrap { white-space: nowrap; }
+  </style>
+</head>
+<body>
+  <header class="bar">
+    <strong>Panel del host</strong>
+    <span id="status" class="chip chip-wait">Conectando…</span>
+  </header>
+  <main>
+    <form id="login" class="card login stack" hidden>
+      <h2>Ingresar</h2>
+      <label for="token" class="muted">Token del host (HOST_TOKEN del servidor)</label>
+      <input id="token" class="input mono" type="password" autocomplete="current-password" required>
+      <p id="login-error" class="error" hidden></p>
+      <button class="button" type="submit">Entrar</button>
+    </form>
+
+    <div id="panel" class="stack" hidden>
+      <section id="game" class="card stack" aria-live="polite"></section>
+
+      <section class="card stack">
+        <h2>Sala</h2>
+        <div id="lobby" class="stack"></div>
+        <details id="create">
+          <summary>Crear sala nueva</summary>
+          <form id="create-form" class="stack">
+            <label class="stack">
+              <span class="muted">Tipo de sala</span>
+              <select id="practice" class="input">
+                <option value="taller">Partida con registro de equipos</option>
+                <option value="">Partida con equipos fijos</option>
+              </select>
+              <span class="muted">Con registro, cada grupo crea su equipo desde un celular (nombre e integrantes) y el segundo celular se une después. Con equipos fijos, los equipos ya existen y cada celular elige el suyo. Una sala de práctica juega solo ese minijuego, una y otra vez.</span>
+            </label>
+            <label class="stack">
+              <span id="team-count-label" class="muted">Número de equipos</span>
+              <input id="team-count" class="input" type="number" required>
+            </label>
+            <label id="team-names-field" class="stack">
+              <span class="muted">Nombres de los equipos (opcional, uno por línea)</span>
+              <textarea id="team-names" class="input" maxlength="300"></textarea>
+            </label>
+            <button class="button" type="submit">Crear sala</button>
+          </form>
+        </details>
+      </section>
+
+      <section class="card stack">
+        <h2>Equipos y dispositivos</h2>
+        <div id="teams" class="stack"></div>
+      </section>
+
+      <section class="card stack">
+        <h2>Estadísticas</h2>
+        <p class="muted">Se pueden descargar en cualquier momento. «Todo en Excel» trae todas las tablas en un solo libro; su primera hoja es la lista de estudiantes con su nota (5 × aciertos ÷ preguntas). Los CSV también abren directo en Excel.</p>
+        <div id="exports" class="row"></div>
+        <div id="stats" class="stack"></div>
+      </section>
+
+      <section class="card stack">
+        <h2>Pruebas y avisos</h2>
+        <div class="row">
+          <button id="flash" class="button secondary" type="button">Destello sincronizado</button>
+          <span id="clock" class="mono muted"></span>
+        </div>
+        <form id="announce-form" class="row">
+          <input id="announce-text" class="input" maxlength="140" placeholder="Aviso para todas las pantallas" required>
+          <button class="button" type="submit">Enviar aviso</button>
+        </form>
+      </section>
+
+      <div class="row">
+        <button id="logout" class="button secondary" type="button">Cerrar sesión</button>
+      </div>
+    </div>
+  </main>
+  <script type="module" src="/host/host.js"></script>
+</body>
+</html>

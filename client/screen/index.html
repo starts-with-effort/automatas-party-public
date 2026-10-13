@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Proyector · Autómatas Party</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="preload" href="/assets/fonts/lilita-one-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/nunito-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/shared/base.css">
+  <link rel="stylesheet" href="/shared/party.css">
+  <style>
+    /* Letra grande: se lee a 8 m (RNF-09). */
+    :root { font-size: clamp(16px, 1.7vw, 34px); } /* ≥ 32 px a 1920×1080 */
+    main { max-width: none; padding: 0.4rem 1.6rem 1.2rem; }
+    .topbar { padding: 0.9rem 1.6rem 0.2rem; }
+    .topbar-note { font-size: 0.7rem; }
+    .rounds { --state: 1.5rem; --arrow: 2.2rem; }
+    .topbar .rounds-slot { max-width: 60%; }
+    .layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 1.2rem; align-items: start; }
+    .join { display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
+    .join img { width: 100%; max-width: 460px; aspect-ratio: 1; padding: 12px; border-radius: 12px; background: #fff; }
+    .join-url { font-size: 1.6rem; font-family: var(--display); overflow-wrap: anywhere; }
+    .party .phase-head h1 { font-size: 2.4rem; }
+    .party .countdown { --size: 3.6rem; }
+    .teams-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+    .team-card { font-size: 1.2rem; }
+    .slot { width: 22px; height: 22px; }
+    /* Minijuegos en grande para el video beam. */
+    .reel { height: 520px; }
+    .reel-list li { height: 104px; font-size: 2rem; }
+    .reel-list li.active { font-size: 2.8rem; }
+    /* Memoria: marcador proporcional a la letra grande del proyector. */
+    .memo-score, .memo-score.many { --ring: 2.4rem; }
+    .memo-group { --sw-max: 1.6rem; }
+    /* La resolución de objetos puede tener muchos eventos: dos columnas para que quepan. */
+    .resolution { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 760px), 1fr)); }
+    .resolution li { font-size: 0.85rem; padding: 6px 12px; }
+    @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body class="party">
+  <header class="topbar">
+    <div id="rounds" class="rounds-slot"></div>
+    <span class="topbar-note">Autómatas Party <span id="clock" class="mono" hidden></span></span>
+  </header>
+  <span id="status" class="chip chip-wait">Conectando…</span>
+  <main>
+    <p id="announce" class="announce" hidden></p>
+    <div id="app" class="stack"></div>
+  </main>
+  <!-- Solo con ?debug: versión y commit (también en /health). -->
+  <footer id="version" class="footer muted" hidden></footer>
+  <script type="module" src="/screen/screen.js"></script>
+</body>
+</html>

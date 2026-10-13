@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <title>Ingreso · Presentación</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/shared/base.css">
+  <link rel="stylesheet" href="/shared/party.css">
+  <style>
+    body { min-height: 100dvh; display: grid; place-items: center; padding: 20px; }
+    form {
+      width: min(100%, 420px);
+      display: grid;
+      gap: 14px;
+      padding: 24px;
+      background: var(--surface);
+      border: var(--line) solid var(--ink);
+      border-radius: var(--radius);
+      box-shadow: 0 6px 0 var(--ink);
+    }
+    h1 { margin: 0; }
+    input { width: 100%; font: inherit; font-size: 1.1rem; padding: 12px; border: var(--line) solid var(--ink); border-radius: 12px; }
+    button { font: inherit; font-family: var(--display); font-size: 1.3rem; padding: 12px; border: var(--line) solid var(--ink); border-radius: 12px; background: var(--sun); color: var(--ink); box-shadow: var(--lift); cursor: pointer; }
+    button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+    .error { margin: 0; color: var(--bad); min-height: 1.4em; }
+  </style>
+</head>
+<body class="party">
+  <form id="login">
+    <h1>Presentación</h1>
+    <p class="muted" style="margin:0">Autómatas de pila · escribe el token de la presentación.</p>
+    <input id="token" type="password" autocomplete="current-password" placeholder="Token" required>
+    <button type="submit">Entrar</button>
+    <p class="error" id="error" role="alert"></p>
+  </form>
+  <script type="module">
+    // El token puede llegar en el enlace como #t=<token>: el fragmento no viaja al servidor ni queda
+    // en los logs. Se borra de la barra de direcciones antes de usarlo.
+    const fromLink = new URLSearchParams(location.hash.slice(1)).get('t');
+    if (fromLink) history.replaceState(null, '', location.pathname + location.search);
+
+    const form = document.getElementById('login');
+    const input = document.getElementById('token');
+    const error = document.getElementById('error');
+    const MESSAGES = {
+      bad_token: 'Token incorrecto.',
+      too_many_attempts: 'Demasiados intentos. Espera unos minutos.',
+    };
+
+    async function login(token) {
+      error.textContent = '';
+      try {
+        const res = await fetch('/api/slides/login', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+        if (res.ok) return location.reload();
+        const body = await res.json().catch(() => ({}));
+        error.textContent = MESSAGES[body.error] ?? 'No se pudo entrar.';
+      } catch {
+        error.textContent = 'Sin conexión con el servidor.';
+      }
+    }
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      login(input.value.trim());
+    });
+    if (fromLink) login(fromLink);
+    else input.focus();
+  </script>
+</body>
+</html>

@@ -1,0 +1,181 @@
+/* Presentación: lienzo de 1920×1080 con el tema de cartón del quiz (theme.css aporta las fuentes y
+   los colores). Medidas en px del lienzo: el motor lo escala a la pantalla. Texto de 28 px como
+   mínimo; títulos de 76 px. */
+:root {
+  --sky: #4cc3ff;
+  --mint: #3ed6a8;
+  --lilac: #b69cff;
+  --tile-a: #7c5cff;
+  --tile-p: #12a4a0;
+  --tile-x: #8a8aa3;
+  --shadow: 0 7px 0 var(--ink);
+  --shadow-sm: 0 4px 0 var(--ink);
+  --math: "Cambria Math", "STIX Two Math", "Latin Modern Math", "Times New Roman", serif;
+}
+
+html, body { margin: 0; height: 100%; }
+body.display {
+  overflow: hidden;
+  background: #120e2b;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+body.display.no-cursor, body.display.no-cursor * { cursor: none !important; }
+
+.stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  transform-origin: 0 0;
+  background: var(--paper) radial-gradient(rgb(28 22 64 / 0.08) 2px, transparent 2.4px) 0 0 / 24px 24px;
+  font-size: 38px;
+  line-height: 1.3;
+}
+.slides { position: absolute; inset: 0; }
+
+/* ------------------------------------------------------------ diapositiva */
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 60px 96px 112px;
+}
+.slide-head h1 {
+  margin: 0 0 30px;
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 76px;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+}
+.slide-head { display: flex; align-items: center; justify-content: space-between; gap: 30px; }
+.slide.no-title .slide-head { display: none; }
+.head-chip {
+  flex: none;
+  margin-bottom: 30px;
+  padding: 8px 24px;
+  border: 4px solid var(--ink);
+  border-radius: 999px;
+  background: var(--sun);
+  box-shadow: var(--shadow-sm);
+  font-size: 32px;
+  font-weight: 900;
+}
+.slide-body { position: relative; flex: 1; min-height: 0; }
+
+.card {
+  background: var(--surface);
+  border: 4px solid var(--ink);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  padding: 28px 36px;
+}
+.card.sun { background: var(--sun); }
+.card.pink { background: var(--pink); color: #fff; }
+.card.ink { background: var(--ink); color: #fff; }
+.card.ok { background: #d8f5e6; }
+.card.bad { background: #ffe0e5; }
+.muted { color: var(--muted); }
+.small { font-size: 30px; }
+.big { font-size: 52px; }
+.display-font { font-family: var(--display); font-weight: 400; }
+.math { font-family: var(--math); }
+.chip {
+  display: inline-block;
+  white-space: nowrap;
+  padding: 6px 20px;
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  font-weight: 800;
+}
+.chip.sun { background: var(--sun); }
+.chip.pink { background: var(--pink); color: #fff; }
+.chip.ok { background: var(--ok); color: #fff; }
+.chip.bad { background: var(--bad); color: #fff; }
+sub, sup { font-size: 0.65em; line-height: 0; }
+strong { font-weight: 900; }
+.hl-sun { background: var(--sun); padding: 0 8px; border-radius: 8px; }
+.hl-pink { color: var(--pink); }
+.ok-text { color: var(--ok); }
+.bad-text { color: var(--bad); }
+
+/* Diapositiva sin módulo (o con error): las notas de cada paso. */
+.placeholder { display: grid; gap: 18px; max-width: 1400px; }
+.placeholder p { margin: 0; }
+
+/* ------------------------------------------------------------ pie, pantalla negra y avisos */
+.deck-foot {
+  position: absolute;
+  left: 96px;
+  right: 96px;
+  bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--muted);
+}
+.deck-foot.is-hidden { visibility: hidden; }
+.foot-progress { flex: 1; height: 6px; border-radius: 3px; background: rgb(28 22 64 / 0.12); overflow: hidden; }
+.foot-progress i { display: block; height: 100%; background: var(--ink); transform-origin: 0 50%; transition: transform 0.4s; }
+.foot-num { font-variant-numeric: tabular-nums; }
+
+.blackout { position: absolute; inset: 0; z-index: 40; background: #000; opacity: 0; visibility: hidden; }
+
+.conn {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 50;
+  padding: 10px 22px;
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  background: var(--bad);
+  color: #fff;
+  font-size: 28px;
+  font-weight: 800;
+  box-shadow: var(--shadow-sm);
+}
+.debug {
+  position: absolute;
+  left: 24px;
+  top: 24px;
+  z-index: 50;
+  padding: 6px 14px;
+  background: rgb(0 0 0 / 0.7);
+  color: #fff;
+  font: 24px/1.3 ui-monospace, monospace;
+  border-radius: 8px;
+}
+
+/* ------------------------------------------------------------ ?print: una página por paso */
+@page { size: 1920px 1080px; margin: 0; }
+body.print-mode { overflow: auto; height: auto; background: #d9d5ea; }
+.print-report {
+  max-width: 1100px;
+  margin: 24px auto;
+  padding: 20px 28px;
+  background: var(--surface);
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  font: 700 18px/1.5 "Nunito", system-ui, sans-serif;
+}
+.print-report h1 { margin: 0 0 8px; font: 400 28px var(--display); }
+.print-report .bad-text { font-weight: 900; }
+.print-pages { display: grid; justify-content: center; gap: 24px; padding-bottom: 40px; }
+.page { position: relative; width: 1920px; height: 1080px; overflow: hidden; zoom: 0.5; }
+.page .stage { position: absolute; transform: none; }
+@media print {
+  body.print-mode { background: none; }
+  .print-report { display: none; }
+  .print-pages { display: block; padding: 0; }
+  .page { zoom: 1; break-after: page; }
+  .page, .page * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

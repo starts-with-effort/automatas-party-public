@@ -1,0 +1,5 @@
+# Se desarrolla en Windows y se despliega en Linux: forzar LF en el repositorio.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.webp binary

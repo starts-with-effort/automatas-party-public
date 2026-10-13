@@ -1,0 +1,14 @@
+{
+  "timings": { "leadMs": 300, "draft": 6000, "roulette": 1500, "minigameGroups": 2000, "minigameIntro": 2500, "itemUse": 6000 },
+  "questions": { "readingMs": 500 },
+  "duel": { "lineupMs": 1000, "introMs": 1200, "pickMs": 2500, "revealMs": 1000, "resultMs": 1500, "voidMs": 800 },
+  "minigameRules": {
+    "countdownMs": 1000,
+    "roulette": { "spinMs": 1200 },
+    "memoria": { "pairs": 6, "cardTimeMs": 3000, "revealMs": 400, "maxDurationMs": 60000 },
+    "traza": { "maxDurationMs": 40000, "swapMs": 1500 },
+    "clicker": { "durationMs": 5000 },
+    "flappy": { "levelMs": 15000, "extraMs": 3000 },
+    "arena": { "durationMs": 30000, "powers": { "waves": [4000, 11000, 18000, 24000] } }
+  }
+}

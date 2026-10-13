@@ -1,0 +1,32 @@
+/* Base de la presentación: las fuentes y los colores del tema de cartón del quiz (los mismos valores
+   que client/shared/party.css), sin sus clases, para que los nombres no choquen. */
+@font-face {
+  font-family: "Lilita One";
+  src: url("/assets/fonts/lilita-one-latin.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Nunito";
+  src: url("/assets/fonts/nunito-latin.woff2") format("woff2");
+  font-weight: 600 900;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+  --ink: #1c1640;
+  --paper: #efebff;
+  --sun: #ffc93c;
+  --pink: #ff4f8b;
+  --surface: #ffffff;
+  --muted: #5d5785;
+  --ok: #128a52;
+  --warn: #c56a00;
+  --bad: #e8384f;
+  --display: "Lilita One", "Nunito", system-ui, sans-serif;
+  font-family: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-weight: 700;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }

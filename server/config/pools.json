@@ -1,0 +1,11 @@
+{
+  "nota": "Objetos posibles según la suerte (puesto en el ranking + Ticket Dorado). La clave 6 vale para suerte 6 o más (sección 5.3).",
+  "pools": {
+    "1": ["CV", "EF", "EA", "RR", "CP", "P", "TD"],
+    "2": ["CV", "EF", "EA", "E", "RR", "R", "P", "CP"],
+    "3": ["CV", "EF", "EA", "E", "RR", "CR", "R", "P", "CP", "TD"],
+    "4": ["CV", "EF", "EA", "E", "RR", "SV", "CS", "R", "CR", "DN", "P", "TD"],
+    "5": ["GL", "B", "CS", "C", "DN", "TD", "SV"],
+    "6": ["GL", "B", "CS", "C", "SV", "DN", "BN"]
+  }
+}

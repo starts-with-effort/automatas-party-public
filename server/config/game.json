@@ -1,0 +1,179 @@
+{
+  "teams": {
+    "defaultCount": 6,
+    "minCount": 2,
+    "maxCount": 8,
+    "names": ["Equipo 1", "Equipo 2", "Equipo 3", "Equipo 4", "Equipo 5", "Equipo 6", "Equipo 7", "Equipo 8"],
+    "colors": ["#e03131", "#1971c2", "#2f9e44", "#f08c00", "#7048e8", "#c2255c", "#0c8599", "#5c940d"]
+  },
+  "workshop": {
+    "members": { "min": 2, "max": 6 }
+  },
+  "grading": { "max": 5, "decimals": 1 },
+  "timings": {
+    "leadMs": 1200,
+    "autoAdvanceMs": null,
+    "draft": 20000,
+    "roulette": 5000,
+    "minigameGroups": 5000,
+    "minigameIntro": 13000,
+    "itemUse": 20000
+  },
+  "questions": {
+    "file": "questions.json",
+    "readingMs": 3000,
+    "answerGraceMs": 300,
+    "difficulties": {
+      "basica": { "label": "Básica", "basePoints": 1000, "timeLimitMs": 30000 },
+      "intermedia": { "label": "Intermedia", "basePoints": 1500, "timeLimitMs": 45000 },
+      "dificil": { "label": "Difícil", "basePoints": 2000, "timeLimitMs": 60000 }
+    }
+  },
+  "items": {
+    "file": "items.json",
+    "poolsFile": "pools.json"
+  },
+  "scoring": {
+    "streakDivisor": 10,
+    "streakMinimum": 3,
+    "timeValidation": { "slackMs": 150, "aheadMs": 20, "defaultRttMs": 150 }
+  },
+  "minigameScoring": {
+    "firstPrize": 1000,
+    "roundStep": 500,
+    "catchUp": { "fromRound": 2, "gapStep": 1000, "bonusPerStep": 0.1, "maxBonus": 0.5 }
+  },
+  "stars": {
+    "fragmentsPerStar": 5,
+    "basePoints": 5000,
+    "bonusPoints": 1000
+  },
+  "duel": {
+    "lineupMs": 3000,
+    "introMs": 4000,
+    "pickMs": 6000,
+    "revealMs": 2600,
+    "resultMs": 5000,
+    "voidMs": 2500,
+    "maxRounds": 10
+  },
+  "minigames": [
+    { "id": "memoria", "name": "Memoria de parejas", "enabled": true },
+    { "id": "traza", "name": "Traza a ciegas", "enabled": true },
+    { "id": "clicker", "name": "Alimenta el Autómata", "enabled": true },
+    { "id": "flappy", "name": "Flappy", "enabled": true },
+    { "id": "arena", "name": "Arena", "enabled": true }
+  ],
+  "minigameRules": {
+    "countdownMs": 3000,
+    "roulette": {
+      "spinMs": 4500,
+      "decoys": ["Tetris de estados", "Carrera de Turing", "Bingo de gramáticas", "Pila infinita", "Escondite de epsilon", "Torre de Hanói"]
+    },
+    "memoria": {
+      "instructions": "Por turnos, cada grupo voltea dos cartas: la primera la elige un equipo y la segunda el otro. Si son pareja, suman un punto. 10 s por carta.",
+      "pairs": 15,
+      "cardTimeMs": 10000,
+      "revealMs": 1500,
+      "maxDurationMs": 240000,
+      "prize": 1000,
+      "faces": ["δ", "Σ", "ε", "q₀", "∅", "λ", "⊢", "Γ", "↻", "★", "∪", "∀", "∞", "⇒", "#"]
+    },
+    "traza": {
+      "instructions": "A tiene el diagrama y B la cadena. B dicta los símbolos; A toca el estado al que pasa el autómata, también en los pasos ε. Si fallan, cambian de papel y empiezan de nuevo. Dos intentos.",
+      "maxDurationMs": 120000,
+      "attempts": 2,
+      "swapMs": 3000,
+      "doubleTapMs": 300,
+      "modes": ["final", "empty"],
+      "firstPrize": 1000,
+      "prizeBase": 200,
+      "prizeByTime": 600
+    },
+    "flappy": {
+      "instructions": "Toca la pantalla para aletear y esquiva los tubos: un choque y quedas fuera. Cada jugador que llega a la meta suma.",
+      "levelMs": 60000,
+      "extraMs": 10000,
+      "lives": 1,
+      "gapStart": 42,
+      "gapEnd": 25.4,
+      "gapCurve": 1.6,
+      "gapMin": 24.8,
+      "narrowFrom": 0.6,
+      "narrowBy": 3,
+      "pipeSpacing": 45,
+      "maxShift": 25,
+      "progressMs": 200,
+      "toleranceMs": 1000,
+      "prizePerPlayer": 500
+    },
+    "arena": {
+      "instructions": "Mitad izquierda: arrastra para moverte. Mitad derecha: mantén para disparar. Todos contra el jefe del centro; pasa por las cajas para ganar poderes. Si resiste, gana él.",
+      "threshold": 2000,
+      "durationMs": 75000,
+      "size": 3000,
+      "view": 800,
+      "frameMs": 50,
+      "reportMs": 80,
+      "maxLagMs": 300,
+      "respawnMs": 3000,
+      "shieldMs": 1500,
+      "aimConeDeg": 15,
+      "challenger": {
+        "radius": 28,
+        "speed": 450,
+        "hp": 3,
+        "fireMs": 250,
+        "bullets": 1,
+        "spreadDeg": 0,
+        "bulletSpeed": 1100,
+        "bulletRange": 1000,
+        "bulletRadius": 7
+      },
+      "boss": {
+        "radius": 70,
+        "speed": 290,
+        "hpPerChallenger": 86,
+        "pressure": 1.5,
+        "minHp": 10,
+        "fireMs": 650,
+        "bullets": 3,
+        "spreadDeg": 14,
+        "bulletSpeed": 800,
+        "bulletRange": 1200,
+        "bulletRadius": 14,
+        "states": [
+          { "below": 0.66, "bullets": 5, "spreadDeg": 12, "fireMs": 750 },
+          { "below": 0.33, "bullets": 3, "spreadDeg": 14, "fireMs": 450, "speed": 330 }
+        ],
+        "ring": { "bullets": 12, "shieldMs": 1000 }
+      },
+      "powers": {
+        "waves": [8000, 25000, 42000, 58000],
+        "comebackAbove": 0.5,
+        "padRadius": 45,
+        "pools": { "axis": ["freeze", "blast", "double"], "corner": ["fan", "shield", "turbo"] },
+        "freeze": { "ms": 20000, "charges": 3, "freezeMs": 500, "immuneMs": 2000 },
+        "blast": { "ms": 20000, "radius": 260, "damage": 6 },
+        "double": { "ms": 8000 },
+        "fan": { "ms": 8000, "bullets": 3, "spreadDeg": 12 },
+        "shield": { "ms": 15000, "charges": 2 },
+        "turbo": { "ms": 6000, "speed": 1.5 }
+      },
+      "pointsPerHit": 10,
+      "defeatBonus": 300,
+      "bossSurvivePrize": 500,
+      "bossSurviveStreak": 3,
+      "bossPointsPerKill": 25
+    },
+    "clicker": {
+      "instructions": "Toquen el autómata lo más rápido que puedan durante 30 s. Cuentan los toques de los dos equipos del grupo.",
+      "durationMs": 30000,
+      "maxClicksPerSecond": 20,
+      "soloFactor": 1.7,
+      "batchMs": 200,
+      "graceMs": 300,
+      "prize": 1000
+    }
+  }
+}

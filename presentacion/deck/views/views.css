@@ -1,0 +1,181 @@
+/* Componentes del simulador de PDA (diagrama, cinta, pila, descripciones instantáneas y árbol).
+   Medidas en px del lienzo de 1920×1080. */
+
+.region { position: absolute; }
+
+/* ------------------------------------------------------------ SVG (diagrama y árbol) */
+.pda-svg { display: block; overflow: visible; }
+.pda-svg text { font-family: "Nunito", system-ui, sans-serif; font-weight: 800; fill: var(--ink); }
+.pda-svg .sub { font-size: 66%; }
+
+.diagram .edge { fill: none; stroke: var(--ink); stroke-width: 5; stroke-linecap: round; }
+.diagram .arrow { fill: var(--ink); }
+.diagram .edge-label {
+  font-size: 30px;
+  paint-order: stroke;
+  stroke: var(--paper);
+  stroke-width: 8px;
+  stroke-linejoin: round;
+}
+.diagram .label-mark { fill: var(--sun); stroke: var(--ink); stroke-width: 2.5; }
+.diagram .state-shadow { fill: var(--ink); }
+.diagram .state-circle { stroke: var(--ink); stroke-width: 5; }
+.diagram .state-inner { fill: none; stroke: var(--ink); stroke-width: 4; }
+.diagram .state-ring { fill: none; stroke: var(--pink); stroke-width: 7; stroke-dasharray: 14 9; }
+.diagram .state-name { font-size: 38px; font-weight: 900; text-anchor: middle; }
+.diagram .initial-label { font-size: 26px; fill: var(--muted); }
+.diagram .token { fill: var(--pink); stroke: var(--ink); stroke-width: 4; }
+.diagram .box rect { fill: rgb(255 255 255 / 0.55); stroke: var(--muted); stroke-width: 4; stroke-dasharray: 16 12; }
+.diagram .box-label { font-family: var(--display); font-weight: 400; font-size: 36px; fill: var(--muted); }
+
+/* ------------------------------------------------------------ cinta */
+.tape { position: relative; }
+.tape-label, .stack-label, .ids-title {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.tape-label { margin-bottom: 8px; }
+.tape-cells { position: relative; display: flex; gap: 8px; padding-bottom: 40px; }
+.tape-cell {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: var(--cell);
+  height: var(--cell);
+  border: 4px solid var(--ink);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  font-size: 46px;
+  font-weight: 900;
+}
+.tape-cell.end { border-style: dashed; box-shadow: none; background: transparent; color: var(--muted); font-size: 34px; }
+.tape-head {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: var(--cell);
+  height: 34px;
+  display: flex;
+  justify-content: center;
+}
+.tape-head polygon { fill: var(--pink); stroke: var(--ink); stroke-width: 4; stroke-linejoin: round; }
+.tape-eps {
+  position: absolute;
+  left: calc(var(--cell) / 2 - 26px);
+  top: -54px;
+  width: 52px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  background: var(--pink);
+  color: #fff;
+  font-size: 32px;
+  font-weight: 900;
+}
+
+/* ------------------------------------------------------------ pila */
+.stack-view { display: flex; flex-direction: column; align-items: center; gap: 10px; height: 100%; justify-content: flex-end; }
+.stack-well {
+  position: relative;
+  width: calc(var(--tile-w) + 24px);
+  border: 4px solid var(--ink);
+  border-top: none;
+  border-radius: 0 0 18px 18px;
+  background: rgb(255 255 255 / 0.5);
+}
+.tile {
+  position: absolute;
+  left: 10px;
+  width: var(--tile-w);
+  height: calc(var(--tile) - 6px);
+  display: grid;
+  place-items: center;
+  border: 4px solid var(--ink);
+  border-radius: 12px;
+  box-shadow: 0 4px 0 var(--ink);
+  font-size: calc(var(--tile) * 0.55);
+  font-weight: 900;
+  color: #fff;
+  background: var(--tile-a);
+}
+.tile-Z0 { background: var(--ink); }
+.tile-X0 { background: repeating-linear-gradient(45deg, #6d6a88 0 10px, #807c9c 10px 20px); }
+.tile-P { background: var(--tile-p); }
+.tile-0 { background: var(--sky); color: var(--ink); }
+.tile-1 { background: var(--pink); }
+.tile-Y, .tile-other { background: var(--lilac); color: var(--ink); }
+.stack-top {
+  position: absolute;
+  right: calc(100% + 10px);
+  bottom: calc(var(--tile) / 2 - 18px);
+  white-space: nowrap;
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--pink);
+}
+.stack-empty {
+  position: absolute;
+  inset: auto 0 14px;
+  text-align: center;
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--ok);
+}
+
+/* ------------------------------------------------------------ descripciones instantáneas */
+.ids-title { margin-bottom: 10px; }
+.ids-viewport { position: relative; overflow: hidden; }
+.id-row {
+  display: grid;
+  grid-template-columns: 40px auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px;
+  border-radius: 14px;
+  white-space: nowrap;
+}
+.id-turn { color: var(--muted); font-size: 34px; text-align: center; }
+.id-text { font-size: 34px; font-weight: 900; }
+.id-tr { justify-self: end; font-size: 28px; color: var(--muted); }
+
+/* ------------------------------------------------------------ rótulo y veredicto */
+.scene-caption { display: grid; align-items: center; }
+.caption, .verdict { grid-area: 1 / 1; font-size: 36px; }
+.caption b { font-family: var(--display); font-weight: 400; color: var(--pink); }
+.verdict {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 30px;
+  border: 4px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  font-size: 38px;
+  background: var(--surface);
+}
+.verdict b { font-family: var(--display); font-weight: 400; font-size: 46px; }
+.verdict.ok { background: #d8f5e6; }
+.verdict.ok b, .verdict.ok .verdict-mark { color: var(--ok); }
+.verdict.bad { background: #ffe0e5; }
+.verdict.bad b, .verdict.bad .verdict-mark { color: var(--bad); }
+.verdict-mark { font-size: 54px; font-weight: 900; }
+
+/* ------------------------------------------------------------ árbol */
+.tree .tnode-box { stroke-width: 4; }
+.tree .tnode-text { font-size: 30px; }
+.tree .tedge { stroke: var(--ink); stroke-width: 4; }
+.tree .tedge-label { font-size: 26px; fill: var(--muted); }
+.tree .tbadge circle { stroke: var(--ink); stroke-width: 3; }
+.tree .tbadge.ok circle { fill: var(--ok); }
+.tree .tbadge.bad circle { fill: var(--bad); }
+.tree .tbadge text { fill: #fff; font-size: 24px; font-weight: 900; }
+.tree .treason { font-size: 26px; }
+.tree .treason.ok { fill: var(--ok); }
+.tree .treason.bad { fill: var(--bad); }

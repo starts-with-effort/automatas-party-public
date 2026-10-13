@@ -1,0 +1,23 @@
+{
+  "nota": "Textos e íconos que ven los jugadores (RF-OBJ-09). 'enabled': false saca el objeto de todas las pools (RF-FLU-07). 'image' es la ilustración SVG del objeto dentro de client/assets/ (items/<código>.svg, dibujada con las reglas de docs/ICONOS.md) y reemplaza al ícono; el emoji de 'icon' queda solo como respaldo. 'params' cambia los valores numéricos de cada objeto. Reglas de aparición: 'maxPerGame' = veces que puede aparecer en ofertas en toda la partida; 'onlyLeader' = solo se le ofrece al 1.º; 'perDraft' = no sale de las pools, el draft lo reparte a entre min y max equipos por reparto (primero a los que no tienen fragmentos).",
+  "items": [
+    { "code": "CV", "name": "Caparazón Verde", "icon": "🐢", "image": "items/cv.svg", "enabled": true, "text": "Le quitas puntos a otro equipo: más si va primero.", "params": { "share": 0.07, "shareStep": 0.005 } },
+    { "code": "EF", "name": "Escudo Físico", "icon": "🛡️", "image": "items/ef.svg", "enabled": true, "maxPerGame": 1, "text": "Te protege de los ataques físicos de este turno." },
+    { "code": "EA", "name": "Escudo Anti-hechizos", "icon": "🔮", "image": "items/ea.svg", "enabled": true, "maxPerGame": 1, "text": "Te protege de los hechizos de este turno." },
+    { "code": "E", "name": "Espejo", "icon": "🪞", "image": "items/e.svg", "enabled": true, "maxPerGame": 1, "text": "Devuelve los ataques a quien te los envió." },
+    { "code": "RR", "name": "Reloj Roto", "icon": "⏰", "image": "items/rr.svg", "enabled": true, "text": "Otro equipo tendrá menos tiempo en la próxima pregunta.", "params": { "timeFactor": 0.6667 } },
+    { "code": "SV", "name": "Segunda Vida", "icon": "💖", "image": "items/sv.svg", "enabled": true, "text": "En la próxima pregunta puedes equivocarte una vez." },
+    { "code": "CS", "name": "Chupa-Sangre", "icon": "🧛", "image": "items/cs.svg", "enabled": true, "text": "Apuestas por otro equipo: si acierta, ganas puntos; si falla, pierdes.", "params": { "gainShare": 0.5, "lossShare": 0.1 } },
+    { "code": "R", "name": "+Racha", "icon": "🔥", "image": "items/r.svg", "enabled": true, "text": "Sube tu racha.", "params": { "streak": 3 } },
+    { "code": "CR", "name": "Contrarreloj", "icon": "⏳", "image": "items/cr.svg", "enabled": false, "text": "En la próxima pregunta irán desapareciendo respuestas incorrectas." },
+    { "code": "DN", "name": "Doble o nada", "icon": "🎲", "image": "items/dn.svg", "enabled": true, "text": "Próxima pregunta: doble de puntos si aciertas; pierdes puntos si fallas.", "params": { "multiplier": 2, "penaltyShare": 0.5 } },
+    { "code": "GL", "name": "Guante de Ladrón", "icon": "🧤", "image": "items/gl.svg", "enabled": true, "text": "Le robas la racha a otro equipo." },
+    { "code": "P", "name": "Poción", "icon": "🧪", "image": "items/p.svg", "enabled": true, "onlyLeader": true, "text": "Ganas puntos al instante.", "params": { "points": 300 } },
+    { "code": "CP", "name": "Cáscara de plátano", "icon": "🍌", "image": "items/cp.svg", "enabled": true, "text": "Le bajas la racha a otro equipo.", "params": { "streak": 2 } },
+    { "code": "C", "name": "Calamar", "icon": "🦑", "image": "items/c.svg", "enabled": true, "text": "Llenas de tinta las pantallas de los demás.", "params": { "durationMs": 6000, "fadeMs": 3000 } },
+    { "code": "B", "name": "Bala", "icon": "⚡", "image": "items/b.svg", "enabled": true, "text": "Tu racha sube muchísimo.", "params": { "streak": 8 } },
+    { "code": "TD", "name": "Ticket Dorado", "icon": "🎫", "image": "items/td.svg", "enabled": true, "text": "En el próximo reparto eliges 2 objetos de 4." },
+    { "code": "BN", "name": "Bomba Nuclear", "icon": "☢️", "image": "items/bn.svg", "enabled": true, "text": "Todos pierden muchos puntos, tú también.", "params": { "share": 0.08 } },
+    { "code": "DS", "name": "Desafío", "icon": "⚔️", "image": "items/ds.svg", "enabled": true, "perDraft": { "min": 1, "max": 2 }, "text": "Retas a otro equipo a piedra, papel o tijera: si ganas, te llevas sus estrellas y fragmentos." }
+  ]
+}

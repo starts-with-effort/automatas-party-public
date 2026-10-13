@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#1c1640">
+  <title>Control · Autómatas de pila</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="preload" href="/assets/fonts/lilita-one-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/nunito-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/deck/theme.css">
+  <link rel="stylesheet" href="./remote.css">
+</head>
+<body class="remote">
+  <header class="top">
+    <span class="dot" id="dot" title="Conexión"></span>
+    <span class="top-section" id="section">Conectando…</span>
+    <span class="top-clock" id="clock">0:00</span>
+    <button class="icon-btn" id="menu-open" type="button" aria-label="Menú">☰</button>
+  </header>
+  <div class="banner" id="banner" hidden></div>
+
+  <main class="body" id="body">
+    <section class="slide-card">
+      <div class="slide-meta">
+        <span class="chip" id="num">—</span>
+        <span class="chip who" id="who">—</span>
+      </div>
+      <h1 id="title">—</h1>
+      <div class="dots" id="dots"></div>
+    </section>
+
+    <section class="note" id="note"></section>
+
+    <section class="live" id="live" hidden>
+      <div class="live-pdas" id="live-pdas"></div>
+      <div class="live-input" id="live-input"></div>
+      <div class="live-keys" id="live-keys"></div>
+      <button class="btn sun" id="live-run" type="button">Ejecutar en el proyector</button>
+      <p class="hint" id="live-hint"></p>
+    </section>
+
+    <details class="script" id="script-box">
+      <summary>Guion de la diapositiva</summary>
+      <div id="script"></div>
+    </details>
+
+    <p class="upnext" id="upnext"></p>
+  </main>
+
+  <div class="slide-time" id="slide-time-box">
+    <div class="bar"><i id="slide-bar"></i></div>
+    <span id="slide-time">0:00</span>
+  </div>
+
+  <nav class="buttons">
+    <button class="btn" id="prev" type="button" aria-label="Anterior">◀</button>
+    <button class="btn sun big" id="next" type="button">Siguiente ▶</button>
+  </nav>
+
+  <div class="sheet" id="sheet" hidden>
+    <div class="sheet-panel">
+      <div class="sheet-head">
+        <strong>Menú</strong>
+        <button class="icon-btn" id="menu-close" type="button" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="sheet-row">
+        <button class="btn" id="blackout" type="button">Pantalla negra</button>
+      </div>
+      <div class="sheet-row two">
+        <button class="btn" id="timer-toggle" type="button">Iniciar cronómetro</button>
+        <button class="btn" id="timer-reset" type="button">Reiniciar</button>
+      </div>
+      <h2>Índice</h2>
+      <ol class="index" id="index"></ol>
+      <button class="btn ghost" id="logout" type="button">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <script type="module" src="./remote.js"></script>
+</body>
+</html>

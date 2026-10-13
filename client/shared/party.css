@@ -1,0 +1,1277 @@
+/* Diseño «Tablero con autómata» para el celular y el proyector (el host sigue con base.css).
+   Piezas de cartón: contorno grueso de tinta, sombra dura y colores planos. Aspecto fijo: no
+   sigue el modo oscuro del sistema, para que los dos celulares de un equipo se vean igual.
+   Fuentes servidas por el propio servidor (licencia SIL Open Font License). */
+@font-face {
+  font-family: "Lilita One";
+  src: url("/assets/fonts/lilita-one-latin.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Nunito";
+  src: url("/assets/fonts/nunito-latin.woff2") format("woff2");
+  font-weight: 600 900;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+  --ink: #1c1640;
+  --paper: #efebff;
+  --sun: #ffc93c;
+  --pink: #ff4f8b;
+  --bg: var(--paper);
+  --surface: #ffffff;
+  --text: var(--ink);
+  --muted: #5d5785;
+  --border: var(--ink);
+  --accent: var(--pink);
+  --accent-text: var(--ink);
+  --ok: #128a52;
+  --warn: #c56a00;
+  --bad: #e8384f;
+  --flash: var(--sun);
+  --flash-text: var(--ink);
+  --radius: 16px;
+  --line: 3px;
+  --lift: 0 4px 0 var(--ink);
+  --display: "Lilita One", "Nunito", system-ui, sans-serif;
+  font-family: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-weight: 700;
+}
+
+body.party {
+  background: var(--paper) radial-gradient(rgb(28 22 64 / 0.09) 1.4px, transparent 1.6px) 0 0 / 16px 16px;
+}
+
+.party :is(h1, h2) { font-family: var(--display); font-weight: 400; letter-spacing: 0.01em; }
+.party h1 { font-size: 2rem; line-height: 1; }
+.party h2 { font-size: 1.4rem; }
+.party :is(.big-number, .verdict, .go-overlay, .flash, .tz-big, .tz-card h2) { font-family: var(--display); font-weight: 400; }
+.party .mono { font-family: inherit; font-variant-numeric: tabular-nums; }
+.party .muted, .party .hint { color: var(--muted); }
+
+/* ------------------------------------------------------------ cabecera */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px var(--gutter) 0;
+}
+#team { min-width: 0; }
+.topbar-brand { font-family: var(--display); font-size: 1.1rem; }
+.topbar-note { flex: none; font-size: 0.75rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }
+.team-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 4px 14px 4px 5px;
+  border: var(--line) solid var(--ink);
+  border-radius: 999px;
+  background: var(--team);
+  color: #fff;
+  font-family: var(--display);
+  font-size: 1.05rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 0 rgb(28 22 64 / 0.35);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.team-pill .pawn { flex: none; width: 20px; height: 20px; border-radius: 50%; background: #fff; border: 2.5px solid var(--ink); }
+
+/* El estado de la conexión solo aparece cuando hay un problema. */
+.party #status {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  left: 50%;
+  z-index: 30;
+  transform: translateX(-50%);
+  padding: 6px 14px;
+  background: var(--surface);
+  border: var(--line) solid var(--ink);
+  box-shadow: var(--lift);
+}
+.party #status.chip-ok { display: none; }
+.party #status.chip-off, .party #status.chip-bad { background: var(--bad); color: #fff; }
+
+/* ------------------------------------------------------------ autómata de rondas (rounds.js) */
+.rounds-slot { padding: 0 var(--gutter); }
+.topbar .rounds-slot { flex: 1 1 auto; min-width: 0; padding: 0; }
+.rounds {
+  --state: 34px;
+  --arrow: 30px;
+  overflow: hidden;
+  padding: 12px 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8px, #000 calc(100% - 8px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8px, #000 calc(100% - 8px), transparent);
+}
+.rounds-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: max-content;
+  padding: 0 14px;
+  transition: transform 0.6s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+.rounds-state {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: var(--state);
+  height: var(--state);
+  border: var(--line) solid var(--ink);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: calc(var(--state) * 0.4);
+  line-height: 1;
+}
+.rounds-state.is-done { background: var(--ink); color: #fff; }
+/* Doble círculo: el estado actual y, al final, qF como estado de aceptación. */
+.rounds-state.is-now { background: var(--sun); box-shadow: 0 0 0 3px var(--paper), 0 0 0 6px var(--ink); }
+.rounds-state.is-accepted { background: var(--ok); color: #fff; box-shadow: 0 0 0 3px var(--paper), 0 0 0 6px var(--ink); }
+.rounds-arrow { position: relative; flex: none; width: var(--arrow); height: max(3px, calc(var(--state) * 0.09)); margin: 0 10px 0 5px; background: var(--ink); }
+.rounds-arrow::after {
+  content: "";
+  position: absolute;
+  top: -4.5px;
+  right: -8px;
+  border-style: solid;
+  border-width: 6px 0 6px 8px;
+  border-color: transparent transparent transparent var(--ink);
+}
+.rounds-arrow.is-todo { background: repeating-linear-gradient(90deg, var(--ink) 0 5px, transparent 5px 9px); }
+.rounds-arrow.start { width: calc(var(--arrow) * 0.6); }
+/* La ficha del equipo, apoyada sobre el estado actual. */
+.rounds-token {
+  position: absolute;
+  width: 17px;
+  height: 17px;
+  border: var(--line) solid var(--ink);
+  border-radius: 50%;
+  background: var(--team);
+  box-shadow: 0 0 0 2px var(--surface);
+  transform: translate(-50%, -50%);
+  transition: left 0.6s cubic-bezier(0.3, 0.7, 0.2, 1), top 0.6s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+.rounds-track.instant, .rounds-track.instant .rounds-token { transition: none; }
+
+/* ------------------------------------------------------------ piezas comunes */
+.party :is(.card, .statement, .item-card, .result-row) {
+  border: var(--line) solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: var(--lift);
+}
+.party :is(.declared, .stat, .reel, .flappy-overlay) { border: var(--line) solid var(--ink); }
+.party .effect-chip { border: 2px solid var(--ink); }
+.party .team-dot { border: 2px solid var(--ink); }
+
+.party .button {
+  border: var(--line) solid var(--ink);
+  border-radius: 14px;
+  background: var(--sun);
+  color: var(--ink);
+  box-shadow: var(--lift);
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
+}
+.party .button:not(:disabled):active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+.party .button.secondary { background: var(--surface); color: var(--ink); }
+.party .button.small { border-width: 2.5px; box-shadow: 0 3px 0 var(--ink); font-size: 0.95rem; }
+.party .button.danger { background: var(--bad); color: #fff; }
+
+.party .note {
+  margin: 0;
+  padding: 10px 14px;
+  border: var(--line) solid var(--ink);
+  border-radius: 14px;
+  background: var(--surface);
+  font-size: 0.95rem;
+}
+.party .announce { background: var(--sun); color: var(--ink); border: var(--line) solid var(--ink); box-shadow: var(--lift); }
+.party .banner { background: var(--surface); border: var(--line) solid var(--warn); }
+.party .done { font-family: var(--display); font-weight: 400; font-size: 1.25rem; }
+.party .sticker {
+  position: absolute;
+  top: -11px;
+  right: -7px;
+  padding: 1px 9px;
+  border: 2.5px solid var(--ink);
+  border-radius: 8px;
+  background: var(--sun);
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: 0.85rem;
+  text-shadow: none;
+  transform: rotate(8deg);
+}
+.pill { padding: 3px 12px; border: 2.5px solid var(--ink); border-radius: 999px; background: var(--surface); font-size: 0.85rem; font-weight: 900; }
+.chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+
+/* Cuenta regresiva: ficha amarilla con un anillo que se vacía (--left lo pone ui.js). */
+.party .countdown {
+  --size: 64px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: var(--size);
+  height: var(--size);
+  min-width: 0;
+  border: var(--line) solid var(--ink);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle closest-side, var(--sun) 0 68%, var(--ink) 68% calc(68% + 2.5px), transparent calc(68% + 3px)),
+    conic-gradient(var(--pink) calc(var(--left, 1) * 1turn), var(--surface) 0);
+  box-shadow: 3px 3px 0 var(--ink);
+  color: var(--ink);
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: calc(var(--size) * 0.34);
+  text-align: center;
+}
+.party .phase-head { align-items: flex-start; }
+.party .phase-head h1 { font-size: 1.9rem; }
+.party .phase-head .stack { gap: 8px; }
+
+.party .difficulty { align-self: flex-start; border: 2.5px solid var(--ink); color: var(--ink); font-weight: 900; }
+.party .difficulty.basica { background: #c9f2dc; }
+.party .difficulty.intermedia { background: var(--sun); }
+.party .difficulty.dificil { background: #ffc2cc; }
+
+/* Equipos que respondieron, eligieron o confirmaron: una marca por equipo. */
+.progress-dots { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 10px; font-size: 0.85rem; font-weight: 900; }
+.progress-dots .dots { display: flex; flex-wrap: wrap; gap: 5px; }
+.progress-dots i { width: 14px; height: 14px; border: 2.5px solid var(--ink); border-radius: 50%; background: var(--surface); }
+.progress-dots i.on { background: var(--ink); }
+
+/* ------------------------------------------------------------ equipos */
+.party .team-card {
+  position: relative;
+  gap: 10px;
+  padding: 12px;
+  border: var(--line) solid var(--ink);
+  border-radius: var(--radius);
+  background: var(--team);
+  color: #fff;
+  box-shadow: var(--lift);
+  text-shadow: 0 1px 0 rgb(28 22 64 / 0.35);
+}
+.party .team-card strong { font-family: var(--display); font-weight: 400; font-size: 1.25rem; }
+.party .team-card .muted { color: inherit; opacity: 0.9; }
+.party .team-card .slot { border-color: #fff; }
+.party .team-card .slot.filled { background: #fff; border-color: #fff; }
+.party button.team-card:disabled { opacity: 1; }
+.party button.team-card:not(:disabled):active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+.party .teams-grid .team-card.full { opacity: 0.45; }
+.party .team-card.mine { border-color: var(--ink); outline: var(--line) solid var(--ink); outline-offset: 3px; }
+.party .team-card.ready { border-color: var(--ink); }
+.team-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; font-size: 0.85rem; }
+
+/* ------------------------------------------------------------ preguntas */
+.party .option {
+  border: var(--line) solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: 0 5px 0 var(--ink);
+  font-size: 1.02rem;
+  font-weight: 800;
+}
+.party .options-grid { gap: 12px; }
+.party .options-grid .option { flex-direction: column; align-items: flex-start; justify-content: space-between; min-height: 112px; }
+.party button.option:not(:disabled):active { transform: translateY(4px); box-shadow: 0 1px 0 var(--ink); }
+.party .option-badge { font-family: var(--display); font-weight: 400; font-size: 1.3em; }
+.party .option.chosen { border-color: var(--ink); box-shadow: 0 0 0 4px var(--paper), 0 0 0 7px var(--ink); }
+.party .option.correct { border-color: var(--ink); box-shadow: 0 0 0 4px var(--paper), 0 0 0 7px var(--ok); }
+.party .option-count { background: var(--surface); color: var(--ink); border: 2px solid var(--ink); }
+.party .statement { font-size: 1.2rem; }
+
+/* Resultado: estrella con el veredicto y los puntos. */
+.burst-wrap { align-self: center; filter: drop-shadow(4px 4px 0 var(--ink)); }
+.burst {
+  display: grid;
+  place-content: center;
+  gap: 2px;
+  width: 220px;
+  height: 220px;
+  background: var(--ok);
+  color: #fff;
+  text-align: center;
+  clip-path: polygon(50% 0%, 60.6% 10.4%, 75% 6.7%, 79% 21%, 93.3% 25%, 89.6% 39.4%, 100% 50%, 89.6% 60.6%, 93.3% 75%, 79% 79%, 75% 93.3%, 60.6% 89.6%, 50% 100%, 39.4% 89.6%, 25% 93.3%, 21% 79%, 6.7% 75%, 10.4% 60.6%, 0% 50%, 10.4% 39.4%, 6.7% 25%, 21% 21%, 25% 6.7%, 39.4% 10.4%);
+}
+.burst.bad { background: var(--bad); }
+.burst.neutral { background: var(--muted); }
+.burst-title { font-family: var(--display); font-size: 1.6rem; line-height: 1.05; }
+.burst-points { font-family: var(--display); font-size: 3rem; line-height: 1; }
+/* Bajo la estrella: racha, tiempo y ajustes de objetos en texto, sin pastillas. */
+.result-line { margin: 0; text-align: center; font-size: 1.05rem; font-weight: 800; color: var(--muted); }
+.result-line strong { color: var(--ink); font-weight: 900; }
+.result-adjustment { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0; font-size: 0.95rem; }
+.result-adjustment .item-icon { width: 28px; height: 28px; font-size: 22px; }
+
+/* ------------------------------------------------------------ ranking en el celular */
+.place-card { display: flex; align-items: center; gap: 18px; }
+.place-card .stack { gap: 2px; }
+.place { font-family: var(--display); font-size: 3.6rem; line-height: 1; }
+.place-split { font-size: 0.8rem; }
+.place-badges { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+.place-badges .streak-fire { width: 1.8rem; height: 2.15rem; }
+.place-badges .star-svg { width: 1.9rem; height: 1.9rem; }
+.top-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.top-list li { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: var(--line) solid var(--ink); border-radius: 12px; background: var(--surface); }
+.top-list li.mine { background: var(--sun); }
+.top-pos { width: 1.3em; font-family: var(--display); font-size: 1.2rem; }
+.top-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+
+/* ------------------------------------------------------------ objetos */
+/* Selector de objetivo: dos columnas; al lado del nombre, el dato que importa para el objeto (racha,
+   puntos o estrella), tomado al empezar el uso de objetos. */
+.party .target-picker { display: grid; gap: 10px; }
+.target-question { font-size: 0.9rem; font-weight: 800; color: var(--muted); }
+.targets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.target-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 46px;
+  padding: 2px 8px 2px 12px;
+  border: 2.5px solid var(--ink);
+  border-radius: 12px;
+  background: var(--team);
+  color: #fff;
+  box-shadow: 0 3px 0 var(--ink);
+  font-family: var(--display);
+  font-size: 1rem;
+  text-align: left;
+  text-shadow: 0 1px 0 rgb(28 22 64 / 0.35);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.target-button:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
+.target-name { min-width: 0; overflow-wrap: anywhere; }
+.target-button .streak-fire { width: 1.45rem; height: 1.7rem; }
+.target-meta { display: inline-flex; align-items: center; flex: none; padding: 1px 8px; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); text-shadow: none; font-size: 0.85rem; }
+.target-meta .star-svg { width: 1.3rem; height: 1.3rem; }
+.target-meta .star-badge { padding: 0 4px 0 2px; font-size: 0.75rem; }
+.targets .button.small { min-height: 46px; }
+.target-note { font-size: 0.78rem; font-weight: 800; color: var(--muted); }
+
+/* Resolución como diagrama (items.js): el círculo del equipo, el objeto sobre la flecha y el equipo
+   al que apuntó; debajo, el efecto. Sin renglones blancos. Aparecen uno tras otro. */
+.diagrams { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr)); gap: 1rem 2rem; }
+.dg { display: grid; gap: 4px; opacity: 0; animation: resolution-in 0.4s ease-out forwards; }
+.dg-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.dg-who { display: grid; justify-items: center; gap: 2px; font-size: 0.8rem; font-weight: 900; text-align: center; }
+.dg-ball { display: block; flex: none; width: 2.3rem; height: 2.3rem; border: var(--line) solid var(--ink); border-radius: 50%; background: var(--team); box-shadow: 2px 2px 0 var(--ink); }
+.dg-chip { display: inline-flex; align-items: center; gap: 6px; font-family: var(--display); font-size: 1.05rem; white-space: nowrap; }
+.dg-chip .dg-ball { width: 1.8rem; height: 1.8rem; }
+.dg-arrow { position: relative; display: grid; place-items: center; width: 6.2rem; height: 2.8rem; }
+.dg-arrow::before { content: ""; position: absolute; left: 0; right: 0.6rem; top: 50%; height: 3px; background: var(--ink); translate: 0 -50%; }
+.dg-arrow::after { content: ""; position: absolute; right: 0; top: 50%; translate: 0 -50%; border-style: solid; border-width: 0.45rem 0 0.45rem 0.7rem; border-color: transparent transparent transparent var(--ink); }
+.dg-arrow .item-icon, .dg-item .item-icon { position: relative; z-index: 1; width: 2.7rem; height: 2.7rem; border-radius: 50%; background: var(--paper); font-size: 2rem; }
+.dg-verb { font-family: var(--display); font-size: 1.05rem; }
+.dg-fx { margin: 0; font-size: 0.9rem; font-weight: 800; color: var(--muted); }
+.dg-blocked .dg-fx, .dg-reflected .dg-fx { color: var(--ink); }
+.resolution-mine { gap: 0; }
+.resolution-mine .eyebrow { margin: 0; }
+.resolution-total { margin: 0; font-family: var(--display); font-size: 1.6rem; line-height: 1.1; }
+.resolution-total span { font-family: "Nunito", system-ui, sans-serif; font-size: 0.95rem; font-weight: 800; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .dg { animation: none; opacity: 1; } }
+
+/* Puesto del equipo en la cabecera del celular: en todas las pantallas salvo las preguntas. */
+.pos-chip { display: inline-flex; align-items: baseline; gap: 6px; padding: 2px 11px; border: 2.5px solid var(--ink); border-radius: 999px; background: var(--surface); box-shadow: 2px 2px 0 var(--ink); color: var(--ink); font-family: var(--display); font-size: 1.05rem; font-weight: 400; letter-spacing: 0; text-transform: none; white-space: nowrap; }
+.pos-chip small { font-family: "Nunito", system-ui, sans-serif; font-size: 0.78rem; font-weight: 900; color: var(--muted); }
+.party .item-card.selected { background: #fff3c4; box-shadow: 0 0 0 4px var(--paper), 0 0 0 7px var(--ink); }
+.party .resolution li { border-style: solid; border-width: var(--line) var(--line) var(--line) 10px; border-top-color: var(--ink); border-right-color: var(--ink); border-bottom-color: var(--ink); }
+
+/* ------------------------------------------------------------ minijuegos */
+.party .reel::after { border-color: var(--ink); }
+.party .reel.stopped::after { background: rgb(255 201 60 / 0.35); }
+.party .reel-list li.active, .party .reel.stopped .reel-list li.active { color: var(--ink); font-family: var(--display); font-weight: 400; }
+/* .bar también nombra la cabecera vieja de base.css: aquí solo la barra del Clicker. */
+.party .bars .bar { display: block; height: 1.6rem; padding: 0; border: var(--line) solid var(--ink); }
+/* Memoria: piezas de cartón. Marcador y tablero con contorno de tinta; dorso rosa con un estado de
+   aceptación (doble círculo) y cara con el color del símbolo. */
+.party .memo-score { border: var(--line) solid var(--ink); box-shadow: var(--lift); }
+.party .memo-group.active { background: var(--sun); border: 2.5px solid var(--ink); }
+.party .memo-group + .memo-group::before { background: rgb(28 22 64 / 0.18); }
+.party .memo-swatch.flipping { box-shadow: 0 3px 0 var(--ink); }
+.party .memo-count { font-family: var(--display); font-weight: 400; }
+/* En pantallas bajas la cabecera se achica para dejarle alto al tablero (cartas más fáciles de tocar). */
+@media (max-height: 760px) {
+  .party main:has(.memo-play) { gap: 10px; padding-top: 10px; }
+  .party main:has(.memo-play) .phase-head h1 { font-size: 1.45rem; }
+  .party main:has(.memo-play) .countdown { --size: 48px; }
+}
+@media (max-height: 620px) {
+  .party:has(.memo-play) .topbar { padding-top: 8px; }
+  .party:has(.memo-play) .rounds { --state: 26px; --arrow: 22px; padding: 6px 0; }
+  .party main:has(.memo-play) { gap: 8px; padding-top: 6px; }
+  .party main:has(.memo-play) .phase-head h1 { font-size: 1.2rem; }
+  .party main:has(.memo-play) .countdown { --size: 40px; }
+  .party .memo-play { gap: 8px; }
+}
+.party .memo-count.zero { opacity: 1; color: var(--muted); }
+.party .memo-group.active .memo-count.zero { color: var(--ink); }
+.party .memo-plus { border: 2px solid var(--ink); font-family: var(--display); font-weight: 400; }
+.party .memo-ring { --hole: radial-gradient(circle closest-side, var(--surface) 0 52%, var(--ink) 52% calc(52% + 2px), transparent calc(52% + 2.5px)); border-width: 2.5px; background: var(--hole), conic-gradient(var(--pink) calc(var(--left) * 1turn), var(--paper) 0); }
+.party .memo-ring.low { background: var(--hole), conic-gradient(var(--bad) calc(var(--left) * 1turn), var(--paper) 0); }
+.party .memo-ring.ok { background: var(--hole), #3ccf6e; }
+.party .memo-ring.bad { background: var(--hole), var(--bad); }
+.party .memo-board { border: var(--line) solid var(--ink); border-radius: 20px; background: rgb(255 255 255 / 0.6); }
+.party .memo-board.my-turn { background: #fff3c4; box-shadow: 0 0 0 3px var(--paper), 0 0 0 6px var(--sun); }
+.party .memo-side { border: var(--line) solid var(--ink); box-shadow: 0 4px 0 var(--ink); }
+.party .memo-board.my-turn .memo-card[data-state="down"]:hover .memo-back { box-shadow: 0 8px 0 var(--ink); }
+.party .memo-back { background: var(--pink) radial-gradient(rgb(255 255 255 / 0.38) 1.5px, transparent 1.8px) 0 0 / 9px 9px; }
+.party .memo-mark { border: 2.5px solid var(--ink); box-shadow: 0 0 0 3px var(--surface), 0 0 0 5.5px var(--ink); font-family: var(--display); font-weight: 400; }
+.party .memo-disk { border-width: 2.5px; }
+.party .memo-glyph { font-family: var(--display); font-weight: 400; }
+.party .memo-card.match .memo-front { box-shadow: 0 4px 0 var(--ink), 0 0 0 4px var(--surface), 0 0 0 8px #3ccf6e, 0 0 26px 8px rgb(60 207 110 / 0.75); }
+.party .memo-card.miss .memo-front { box-shadow: 0 4px 0 var(--ink), 0 0 0 4px var(--surface), 0 0 0 8px var(--bad), 0 0 22px 6px rgb(232 56 79 / 0.6); }
+.party .memo-card[data-badge]::after { border: 2.5px solid var(--ink); font-family: var(--display); font-weight: 400; }
+.party .memo-card[data-state="gone"]::before { border: 2.5px dashed rgb(28 22 64 / 0.28); }
+.party .memo-ghost { border: var(--line) solid var(--ink); box-shadow: 0 4px 0 var(--ink); }
+/* La tira de rondas ocupa ~60 px más arriba: el Flappy se encoge para que quepa sin desplazarse en
+   un celular de 740 px de alto. La Traza a ciegas y la Arena reparten el alto por sí mismas.
+   Sin margen inferior para la barra de gestos o de navegación, las teclas quedan debajo de ella. */
+.party main { padding-bottom: calc(var(--gutter) + env(safe-area-inset-bottom, 0px)); }
+.party :is(.arena-stage, .arena-bar, .arena-msg) { border: var(--line) solid var(--ink); }
+.party .arena-stage { box-shadow: var(--lift); }
+.party .arena-hint { font-size: 0.95rem; }
+.party .arena-msg { font-family: var(--display); font-weight: 400; font-size: 1.2rem; box-shadow: var(--lift); }
+.party .arena-cell { border: 2.5px solid var(--ink); border-bottom-width: 0; font-family: var(--display); font-weight: 400; }
+.party .arena-cell.z0 { border-bottom-width: 2.5px; border-radius: 0 0 9px 9px; box-shadow: 0 4px 0 var(--ink); }
+.party .arena-cell.top { border-radius: 7px 7px 0 0; background: var(--sun); color: var(--ink); }
+.party .arena-pila-name { font-family: var(--display); font-weight: 400; }
+.party .arena-states circle { stroke: var(--ink); }
+.party .arena-states .now circle:first-child { fill: var(--sun); }
+.party .arena-states text { font-family: var(--display); font-weight: 400; fill: var(--ink); }
+.party .arena-states .arena-th { font-family: Nunito, system-ui, sans-serif; font-weight: 800; fill: var(--muted); }
+.party .flappy { width: min(100%, calc((100dvh - 300px) * 0.75)); border: var(--line) solid var(--ink); }
+
+/* ------------------------------------------------------------ instrucciones del minijuego (minigames.js, demos.js) */
+/* Insignia del tipo, la demo en bucle, las instrucciones cortas y los equipos según el tipo. */
+.kind-badge { align-self: flex-start; display: inline-flex; padding: 3px 12px; border: 2.5px solid var(--ink); border-radius: 999px; font-size: 0.78rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; box-shadow: 2px 2px 0 var(--ink); }
+.kind-badge.solo { background: #c9f2dc; }
+.kind-badge.duo { background: var(--sun); }
+.kind-badge.boss { background: #ffc2cc; }
+.intro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem 2rem; align-items: start; }
+.intro-main, .intro-teams { display: flex; flex-direction: column; gap: 0.7rem; min-width: 0; }
+.intro-main .demo-box { width: min(100%, 26rem); }
+.intro-text { margin: 0; font-size: 1.05rem; font-weight: 700; line-height: 1.35; }
+.intro-teams .eyebrow, .intro-phone .eyebrow { margin: 0; }
+@media (max-width: 800px) { .intro { grid-template-columns: minmax(0, 1fr); } }
+.demo-box { position: relative; width: 100%; aspect-ratio: 43 / 25; overflow: hidden; border: var(--line) solid var(--ink); border-radius: 16px; background: var(--surface); box-shadow: var(--lift); }
+.demo-svg { display: block; width: 100%; height: 100%; }
+.demo-svg .demo-display { font-family: var(--display); }
+.demo-tag { position: absolute; top: 8px; left: 8px; padding: 1px 9px; border: 2px solid var(--ink); border-radius: 8px; background: var(--sun); font-family: var(--display); font-size: 0.8rem; rotate: -3deg; }
+
+.team-ball { position: relative; display: block; flex: none; width: 2.2rem; height: 2.2rem; border: var(--line) solid var(--ink); border-radius: 50%; background: var(--team); box-shadow: 2px 2px 0 var(--ink); }
+.team-ball.me::after { content: ""; position: absolute; inset: 22%; border: 2.5px solid var(--ink); border-radius: 50%; background: #fff; }
+.who-name { font-size: 0.8rem; font-weight: 900; white-space: nowrap; }
+/* Solitario: cada equipo en su recuadro punteado. */
+.solo-diagram { display: grid; grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr)); gap: 0.6rem; }
+.solo-cell { display: grid; justify-items: center; gap: 4px; padding: 0.6rem 0.3rem 0.5rem; border: 2.5px dashed rgb(28 22 64 / 0.45); border-radius: 14px; }
+.solo-cell.mine { border-style: solid; border-color: var(--ink); background: rgb(255 201 60 / 0.25); }
+.solo-lane svg { display: block; width: 2.4rem; height: 1.55rem; }
+/* En equipos: piezas amarillas con dos círculos unidos por una transición de ida y vuelta. */
+.pairs-diagram { display: flex; flex-direction: column; gap: 0.6rem; }
+.pair-piece { display: grid; grid-template-columns: 4.6rem auto auto auto; align-items: center; justify-content: start; gap: 0.6rem; padding: 0.5rem 0.8rem; border: var(--line) solid var(--ink); border-radius: 14px; background: rgb(255 201 60 / 0.28); }
+.pair-piece.mine { background: var(--sun); box-shadow: 0 0 0 3px var(--paper), 0 0 0 6px var(--ink); }
+.pair-label { font-family: var(--display); font-size: 0.95rem; }
+.pair-who { display: inline-flex; align-items: center; gap: 0.4rem; }
+.pair-who .team-ball { width: 1.9rem; height: 1.9rem; }
+.pair-who .who-name { font-size: 0.9rem; }
+.pair-link { position: relative; display: block; width: 2.6rem; height: 3px; background: var(--ink); }
+.pair-link::before, .pair-link::after { content: ""; position: absolute; top: 50%; translate: 0 -50%; border-style: solid; }
+.pair-link::before { left: -2px; border-width: 6px 8px 6px 0; border-color: transparent var(--ink) transparent transparent; }
+.pair-link::after { right: -2px; border-width: 6px 0 6px 8px; border-color: transparent transparent transparent var(--ink); }
+.pair-alone { font-size: 0.85rem; font-weight: 800; color: var(--muted); }
+.pair-alone small { display: block; font-size: 0.75rem; }
+/* En el celular, «Tu grupo» ya lo dice: sin la etiqueta del grupo, para que quepa en 360 px. */
+.intro-phone .pair-piece { grid-template-columns: auto auto auto; gap: 0.45rem; padding: 0.5rem 0.7rem; }
+.intro-phone .pair-label { display: none; }
+.intro-phone .pair-link { width: 2rem; }
+/* Contra el jefe: el jefe con su corona al centro y los retadores alrededor. */
+.boss-diagram { position: relative; width: min(100%, 22rem); aspect-ratio: 330 / 270; margin: 0 auto; }
+.boss-arrows svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.boss-who { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 2px; translate: -50% -50%; text-align: center; }
+.boss-who.above { flex-direction: column-reverse; }
+.boss-who .team-ball { width: 2rem; height: 2rem; }
+.boss-who .team-ball.boss { width: 4rem; height: 4rem; box-shadow: 4px 4px 0 var(--ink); }
+.boss-who .team-ball.boss.two { width: 3.2rem; height: 3.2rem; }
+.team-ball .crown { position: absolute; top: -1.15rem; left: 50%; translate: -50% 0; width: 2.2rem; height: 1.45rem; }
+.boss-who.is-boss .who-name { font-size: 0.9rem; }
+
+/* «Formando grupos»: los marcos aparecen y los círculos bajan desde arriba; la línea queda a la altura
+   del centro de los círculos (3,6rem de alto: centro a 1,8rem). */
+.groups-drop { display: grid; gap: 1.2rem; padding-top: 2.5rem; align-items: start; }
+.drop-frame { display: grid; justify-items: center; gap: 0.8rem; padding: 1.2rem 0.8rem 1rem; border: var(--line) solid var(--ink); border-radius: 18px; background: rgb(255 201 60 / 0.28); box-shadow: var(--lift); }
+.drop-frame .pair-label { padding: 0 0.6rem; border: 2.5px solid var(--ink); border-radius: 8px; background: var(--sun); }
+.drop-pair { display: grid; grid-template-columns: auto auto auto; align-items: start; gap: 0.6rem; }
+.drop-token { display: grid; justify-items: center; gap: 0.3rem; }
+.drop-token .team-ball { width: 3.6rem; height: 3.6rem; box-shadow: 3px 3px 0 var(--ink); }
+.drop-token .who-name { font-family: var(--display); font-weight: 400; font-size: 1.05rem; }
+.drop-pair .pair-link { width: 3rem; margin-top: calc(1.8rem - 1.5px); }
+.drop-pair .pair-alone { margin-top: 1.3rem; }
+.groups-phone { display: grid; justify-items: center; gap: 0.9rem; padding-top: 1rem; text-align: center; }
+.shuffle-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; min-height: 3rem; }
+.partner { display: grid; justify-items: center; gap: 0.4rem; }
+.team-ball.big { width: 5.4rem; height: 5.4rem; box-shadow: 4px 4px 0 var(--ink); }
+.partner-name { font-family: var(--display); font-weight: 400; font-size: 1.9rem; }
+
+/* ------------------------------------------------------------ Traza a ciegas y Flappy en el proyector (rediseño, fase 6) */
+/* Traza a ciegas: un cronómetro de cartón por equipo, sin renglones blancos. El anillo con el color del
+   equipo avanza con el tiempo (--el); al llegar, el centro se pone verde y aparece el puesto. */
+.race { gap: 1rem; }
+.race-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.race-hint { margin: 0; text-align: left; }
+.race-count { flex: none; font-family: var(--display); font-size: 1.15rem; }
+.race-dials { display: grid; gap: 1.1rem 1.5rem; padding-top: 0.4rem; }
+.dial-cell { position: relative; display: grid; justify-items: center; gap: 0.5rem; }
+/* Fichas de intento a la izquierda del cronómetro: la gastada, roja con ✗. */
+.dial-pips { position: absolute; top: 0.2rem; left: calc(50% - 5.6rem); display: grid; gap: 0.35rem; }
+.dial-pips i { display: grid; place-items: center; width: 1.1rem; height: 1.1rem; border: 2.5px solid var(--ink); border-radius: 50%; background: var(--surface); color: #fff; font-style: normal; font-size: 0.7rem; font-weight: 900; line-height: 1; }
+.dial-pips i.lost { background: var(--bad); }
+.dial {
+  --el: 0;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 8.2rem;
+  height: 8.2rem;
+  border: var(--line) solid var(--ink);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle closest-side, var(--sun) 0 70%, var(--ink) 70% calc(70% + 2.5px), transparent calc(70% + 3px)),
+    conic-gradient(var(--team) calc(var(--el) * 1turn), var(--surface) 0);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.dial b { font-family: var(--display); font-weight: 400; font-size: 1.9rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.dial small { position: absolute; bottom: 2.1rem; font-size: 0.75rem; font-weight: 900; }
+.dial.arrived { background: radial-gradient(circle closest-side, #3ccf6e 0 70%, var(--ink) 70% calc(70% + 2.5px), transparent calc(70% + 3px)), conic-gradient(var(--team) calc(var(--el) * 1turn), var(--surface) 0); }
+.dial.arrived b, .dial.arrived small { color: #fff; text-shadow: 0 2px 0 var(--ink); }
+/* Sin intentos: se congela en gris. */
+.dial.out { background: radial-gradient(circle closest-side, #e9e6f5 0 70%, var(--ink) 70% calc(70% + 2.5px), transparent calc(70% + 3px)), conic-gradient(#a9a3c9 calc(var(--el) * 1turn), var(--surface) 0); }
+.dial.out b, .dial.out small { color: var(--muted); }
+.dial-place { position: absolute; top: -0.4rem; right: -0.7rem; padding: 0 0.6rem; border: 2.5px solid var(--ink); border-radius: 9px; background: var(--sun); font-family: var(--display); font-size: 1.15rem; rotate: 8deg; box-shadow: 2px 2px 0 var(--ink); }
+.dial-place:empty { display: none; }
+.dial-name { display: inline-flex; align-items: center; gap: 0.45rem; font-family: var(--display); font-size: 1.1rem; }
+.dial-name i { width: 1.1rem; height: 1.1rem; border: 2.5px solid var(--ink); border-radius: 50%; background: var(--team); }
+
+/* ------------------------------------------------------------ Traza a ciegas (fase B: cartón) */
+/* Diagrama con los colores de la exposición: amarillo = estado actual, rosado = el arco que se usó,
+   rojo = el estado equivocado. Estados con contorno grueso y sombra dura; la ficha del equipo
+   descansa junto al estado actual y viaja por el arco en cada paso (traza.js). */
+.party .tz-shadow { display: inline; fill: var(--ink); }
+.party .tz-edge { stroke: var(--ink); stroke-width: 2.6; }
+.party .tz-edge.used { stroke: var(--pink); stroke-width: 4; }
+.party .tz-arrow { fill: var(--ink); }
+.party .tz-arrow.used { fill: var(--pink); }
+.party .tz-label { fill: var(--ink); }
+.party .tz-label.used { fill: #c8175d; }
+.party .tz-body { stroke: var(--ink); stroke-width: 3; }
+.party .tz-state.now .tz-body { fill: var(--sun); }
+.party .tz-state.tap:active .tz-body { fill: #ffe7a3; }
+.party .tz-name { font-family: var(--display); font-weight: 400; fill: var(--ink); }
+.party .tz-token { stroke: var(--ink); }
+.party .tz-stack-title, .party .tz-eyebrow { font-weight: 900; }
+.party .tz-cell { border: 2.5px solid var(--ink); border-top-width: 0; font-family: var(--display); font-weight: 400; }
+.party .tz-cell.top { border-top-width: 2.5px; border-radius: 9px 9px 0 0; background: var(--sun); color: var(--ink); }
+.party .tz-stack > .tz-cell:last-child { border-radius: 0 0 9px 9px; box-shadow: 0 4px 0 var(--ink); }
+.party .tz-stack > .tz-cell.top:last-child { border-radius: 9px; }
+.party .tz-tape { border-radius: 12px; box-shadow: 0 4px 0 var(--ink); }
+.party .tz-tape span { border: 3px solid var(--ink); border-left-width: 0; font-family: var(--display); font-weight: 400; }
+.party .tz-tape span:first-child { border-left-width: 3px; border-radius: 12px 0 0 12px; }
+.party .tz-tape span:last-child { border-radius: 0 12px 12px 0; }
+.party .tz-ticket { border: 2.5px solid var(--ink); background: #fff3c4; font-weight: 800; box-shadow: 2px 2px 0 var(--ink); }
+.party .tz-last b { color: #c8175d; }
+.party .tz-overlay { background: rgb(239 235 255 / 0.88); }
+.party .tz-card { border: var(--line) solid var(--ink); border-radius: 18px; box-shadow: 0 5px 0 var(--ink); color: var(--ink); }
+.party .tz-card h2 { font-size: 1.75rem; line-height: 1.05; }
+.party .tz-card.good h2 { color: var(--ok); }
+.party .tz-big { font-size: 2.4rem; line-height: 1; }
+.party .tz-swap { border: 2.5px solid var(--ink); }
+.party .tz-bar { border: 2.5px solid var(--ink); }
+
+/* Resultado en el proyector: el ganador a la izquierda y el repaso de la traza a la derecha. */
+.win-split { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2rem; }
+/* Repaso: la cinta arriba; abajo, el diagrama y, a su lado, la pila con la descripción instantánea. */
+.tz-replay {
+  display: grid;
+  grid-template-columns: auto minmax(12rem, 17rem);
+  grid-template-areas: "title title" "tape tape" "diagram side";
+  align-items: center;
+  justify-items: center;
+  gap: 0.5rem 1.6rem;
+  padding: 0.9rem 1.4rem 1rem;
+  border: var(--line) solid var(--ink);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+.tz-replay-title { grid-area: title; margin: 0; font-weight: 800; color: var(--muted); }
+.tz-replay-title b { color: var(--ink); }
+.tz-replay-diagram { grid-area: diagram; display: flex; height: min(50vh, 560px); aspect-ratio: 270 / 512; }
+.tz-replay-diagram .tz-diagram { width: 100%; height: 100%; }
+.tz-replay-side { grid-area: side; display: grid; justify-items: center; gap: 1rem; text-align: center; }
+.tz-replay-stack .tz-stack { width: 4.6rem; }
+.tz-replay-id { margin: 0; font-family: var(--display); font-size: 1.6rem; line-height: 1.1; }
+.tz-replay-step { margin: 0; font-size: 1rem; font-weight: 800; color: var(--muted); }
+.tz-tape.replay { grid-area: tape; margin-top: 12px; }
+.tz-tape.replay span { position: relative; width: 2.1rem; height: 2.5rem; font-size: 1.3rem; transition: background 0.25s, color 0.25s; }
+.tz-tape.replay span.read { background: #e9e6f5; color: var(--muted); }
+.tz-tape.replay span.head::before { content: ""; position: absolute; top: -15px; left: 50%; translate: -50% 0; border-style: solid; border-width: 11px 8px 0; border-color: var(--pink) transparent transparent; }
+
+/* Flappy: riel punteado sobre el papel, estela del color del equipo y meta a cuadros. El pájaro
+   avanza en cada cuadro (flappy.js), sin transición; caído y gris si chocó. */
+.flappy-lanes.live .lane-track { height: 1.6rem; border: 0; border-radius: 0; background: none; }
+.flappy-lanes.live .lane-track::after { content: none; }
+.flappy-lanes.live .lane-track::before { content: ""; position: absolute; left: 0; right: 1rem; top: 50%; height: 3px; translate: 0 -50%; background: repeating-linear-gradient(90deg, rgb(28 22 64 / 0.35) 0 8px, transparent 8px 14px); }
+.lane-trail { position: absolute; left: 0; top: 50%; height: 5px; translate: 0 -50%; border-radius: 3px; background: var(--team); opacity: 0.55; }
+.lane-goal { position: absolute; right: 0; top: -0.15rem; bottom: -0.15rem; width: 0.85rem; border: 2.5px solid var(--ink); border-radius: 4px; background: conic-gradient(var(--ink) 25%, #fff 0 50%, var(--ink) 0 75%, #fff 0) 0 0 / 8px 8px; }
+.flappy-lanes.live .lane-bird { transition: none; }
+.flappy-lanes.live .lane-status { font-family: var(--display); font-weight: 400; }
+.flappy-lanes.live .flappy-lane.crashed { opacity: 1; }
+.flappy-lanes.live .flappy-lane.crashed .team-chip, .flappy-lanes.live .flappy-lane.crashed .lane-status { opacity: 0.5; }
+.flappy-lanes.live .flappy-lane.crashed .lane-trail { opacity: 0.2; }
+.flappy-lanes.live .flappy-lane.arrived .lane-status { color: var(--ok); }
+
+/* ------------------------------------------------------------ resultado del minijuego (rediseño, fase 7) */
+/* Proyector: solo el ganador, al centro y sin recuadros. */
+.win { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.1rem; min-height: 55vh; text-align: center; }
+.win-label { font-size: 0.85rem; font-weight: 900; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+.champs { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 1rem 3rem; }
+.champ { display: grid; justify-items: center; gap: 0.35rem; }
+.champ.crowned { padding-top: 1.5rem; }
+.win-ball { position: relative; display: block; width: 5.4rem; height: 5.4rem; border: var(--line) solid var(--ink); border-radius: 50%; background: var(--team); box-shadow: 5px 5px 0 var(--ink); }
+.win-ball .crown { position: absolute; top: -1.6rem; left: 50%; translate: -50% 0; width: 2.9rem; height: 1.9rem; }
+.champ-name { font-family: var(--display); font-size: 2rem; line-height: 1; }
+.champ-points { font-family: var(--display); font-size: 1.5rem; line-height: 1; color: var(--ok); }
+.champ-perf { font-size: 0.9rem; font-weight: 800; color: var(--muted); }
+.champ-plus { align-self: center; margin-bottom: 2.5rem; font-family: var(--display); font-size: 2.4rem; color: var(--muted); }
+.champs.many { gap: 0.8rem 2rem; }
+.champs.many .win-ball { width: 3.6rem; height: 3.6rem; }
+.champs.many .champ-name { font-size: 1.3rem; }
+.champs.many .champ-points { font-size: 1.15rem; }
+.win-perf { font-family: var(--display); font-size: 2.6rem; line-height: 1; }
+.win-perf small { display: block; margin-top: 0.4rem; font-family: "Nunito", system-ui, sans-serif; font-size: 0.95rem; font-weight: 800; color: var(--muted); }
+.win-tie { margin: 0; font-size: 0.95rem; font-weight: 800; color: var(--muted); }
+.win-none { margin: 0; font-family: var(--display); font-size: 1.6rem; }
+/* Celular: veredicto, puntos y desempeño en texto, sin tarjeta. */
+.win-phone { display: flex; flex-direction: column; align-items: center; gap: 0.7rem; padding-top: 1rem; text-align: center; }
+.win-verdict { font-family: var(--display); font-size: 2.3rem; line-height: 1; }
+.win-verdict.good { color: var(--ok); }
+.win-verdict.neutral { color: var(--muted); }
+.win-points { font-family: var(--display); font-size: 4.2rem; line-height: 1; }
+.win-line { font-size: 1.05rem; font-weight: 800; }
+.win-fragment { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--display); font-size: 1.15rem; }
+.win-fragment .star-svg { width: 2.4rem; height: 2.4rem; }
+.win-fragment .star-badge { display: none; }
+.win-others { display: grid; justify-items: center; gap: 0.35rem; margin-top: 1rem; font-size: 0.95rem; font-weight: 800; color: var(--muted); }
+.win-names { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem 0.9rem; color: var(--ink); font-family: var(--display); font-size: 1.15rem; }
+.win-names span { display: inline-flex; align-items: center; gap: 0.35rem; }
+.win-names i { width: 1.1rem; height: 1.1rem; border: 2.5px solid var(--ink); border-radius: 50%; background: var(--team); }
+
+/* ------------------------------------------------------------ Alimenta el Autómata (Clicker) */
+/* Cinta de cartón: casillas iguales, la escrita en crema y el cabezal rosa sobre la siguiente. */
+.tape { --cells: 9; position: relative; padding-top: 15px; }
+.tape-window { overflow: hidden; border: var(--line) solid var(--ink); border-radius: 8px; background: var(--surface); }
+.tape-track { display: flex; }
+.tape-cell {
+  flex: 1 1 0;
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 30 / 34;
+  border-left: var(--line) solid var(--ink);
+  font-family: var(--display);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+.tape-cell:first-child { border-left: 0; }
+.tape-cell.written { background: #fff6d6; }
+.tape-head {
+  position: absolute;
+  top: 0;
+  left: calc(var(--line) + (100% - 2 * var(--line)) * (var(--at, 0) + 0.5) / var(--cells));
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 13px solid var(--pink);
+  filter: drop-shadow(0 2px 0 var(--ink));
+  translate: -50% 0;
+  transition: left 0.12s;
+}
+
+/* Celular: cuenta del grupo, cinta, el estado como botón (doble círculo) y la transición δ. El
+   botón se encoge con el alto disponible para que nada obligue a desplazar la página. */
+.automaton { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.automaton > p { margin: 0; }
+.automaton-count { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.automaton-count .eyebrow { margin: 0; }
+.automaton-count .big-number { font-size: 3rem; }
+.automaton .tape { width: min(100%, 330px); }
+.automaton-stage { --size: clamp(104px, min(46vw, 24dvh), 240px); position: relative; display: grid; place-items: center; padding: 12px 0 16px; }
+.automaton-button {
+  display: grid;
+  place-items: center;
+  width: var(--size);
+  height: var(--size);
+  padding: 0;
+  border: 4px solid var(--ink);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: calc(var(--size) * 0.3);
+  line-height: 1;
+  box-shadow: 0 0 0 6px var(--paper), 0 0 0 10px var(--ink), 0 14px 0 10px var(--ink);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.automaton-button:active { translate: 0 5px; box-shadow: 0 0 0 6px var(--paper), 0 0 0 10px var(--ink), 0 9px 0 10px var(--ink); }
+.automaton-button:focus-visible { outline: 3px dashed var(--ink); outline-offset: 16px; }
+.automaton-button.idle { opacity: 0.55; }
+.state-label sub, .automaton-caption sub, .state-badge sub { font-size: 0.6em; }
+.state-ring { position: absolute; top: 12px; left: 50%; width: var(--size); height: var(--size); margin-left: calc(var(--size) / -2); border: 4px solid var(--ink); border-radius: 50%; pointer-events: none; }
+.automaton-caption { min-height: 1.5em; font-size: 1.05rem; font-weight: 800; }
+.automaton-fx { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.tape-symbol { position: absolute; font-family: var(--display); font-size: 1.5rem; line-height: 1; color: var(--ink); }
+
+/* Últimos 5 segundos: el borde de la pantalla parpadea, el botón late en rojo y una cuenta grande
+   marca 5, 4, 3…; al acabar queda «¡Tiempo!». */
+.final-count {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 4;
+  translate: -50% -50%;
+  font-family: var(--display);
+  font-size: min(38vw, 9rem);
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--bad);
+  text-shadow: 0 6px 0 var(--ink);
+  opacity: 0;
+  pointer-events: none;
+}
+.automaton.over .final-count { opacity: 1; font-size: 3.2rem; color: var(--ink); text-shadow: 0 4px 0 var(--sun); }
+.automaton.final .automaton-button { background: var(--bad); color: #fff; animation: automaton-beat 0.5s ease-in-out infinite; }
+.automaton.final::before { content: ""; position: fixed; inset: 0; z-index: 5; pointer-events: none; animation: automaton-alarm 0.5s steps(1) infinite; }
+@keyframes automaton-alarm { 0% { box-shadow: inset 0 0 0 8px var(--bad); } 50% { box-shadow: none; } }
+@keyframes automaton-beat { 50% { scale: 1.07; } }
+
+/* La misma cuenta final en la pregunta, el draft y el uso de objetos (urgency.js): el borde
+   parpadea, la ficha de la cuenta late en rojo y el número grande aparece y se desvanece en cada
+   segundo, para no tapar las opciones. En el proyector solo cambia la ficha. */
+.final-alert-frame { position: fixed; inset: 0; z-index: 7; display: none; pointer-events: none; }
+body.final-alert .final-alert-frame { display: block; animation: automaton-alarm 0.5s steps(1) infinite; }
+.final-alert-count {
+  position: fixed;
+  top: 52%;
+  left: 50%;
+  z-index: 7;
+  translate: -50% -50%;
+  font-family: var(--display);
+  font-size: min(38vw, 9rem);
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--bad);
+  text-shadow: 0 6px 0 var(--ink);
+  opacity: 0;
+  pointer-events: none;
+}
+.final-alert-count.end { opacity: 1; font-size: 3.2rem; color: var(--ink); text-shadow: 0 4px 0 var(--sun); }
+body.final-alert .countdown {
+  background:
+    radial-gradient(circle closest-side, var(--bad) 0 68%, var(--ink) 68% calc(68% + 2.5px), transparent calc(68% + 3px)),
+    conic-gradient(var(--bad) calc(var(--left, 1) * 1turn), var(--surface) 0);
+  color: #fff;
+  animation: automaton-beat 0.5s ease-in-out infinite;
+}
+
+/* Proyector: una cinta por grupo con su estado; el estado del que va primero, en amarillo. */
+.automaton-board { display: flex; flex-direction: column; gap: 1.3rem; }
+.board-row { display: grid; grid-template-columns: minmax(0, 11rem) minmax(0, 1fr) auto auto; align-items: end; gap: 0.8rem; }
+.board-row > .row { align-self: center; flex-wrap: wrap; gap: 0.2rem 0.5rem; }
+.automaton-board .tape { --cells: 16; padding-top: 0.6rem; }
+.automaton-board .tape-cell { aspect-ratio: auto; height: 2.8rem; font-size: 1.4rem; }
+.automaton-board .tape-head { border-left-width: 0.4rem; border-right-width: 0.4rem; border-top-width: 0.6rem; transition: left 0.25s linear; }
+.state-badge {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border: var(--line) solid var(--ink);
+  border-radius: 50%;
+  background: var(--surface);
+  font-family: var(--display);
+  font-size: 1.3rem;
+  line-height: 1;
+}
+.state-badge.top { background: var(--sun); box-shadow: 0 0 0 3px var(--paper), 0 0 0 6px var(--ink); }
+.board-count { min-width: 4ch; font-family: var(--display); font-size: 1.6rem; line-height: 3rem; text-align: right; font-variant-numeric: tabular-nums; }
+/* Celulares bajos (p. ej. 320×568): menos aire para que el botón no obligue a desplazar. */
+@media (max-height: 640px) {
+  .automaton { gap: 6px; }
+  .automaton-count .big-number { font-size: 2.2rem; }
+  .automaton .tape { padding-top: 13px; }
+  .automaton .tape-cell { aspect-ratio: 1; }
+  .automaton-stage { padding: 10px 0 12px; }
+  .state-ring { top: 10px; }
+}
+@media (max-width: 800px) {
+  .board-row { grid-template-columns: minmax(0, 1fr) auto auto; }
+  .board-row > .row { grid-column: 1 / -1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.final-alert .final-alert-frame { animation: none; box-shadow: inset 0 0 0 8px var(--bad); }
+  body.final-alert .countdown { animation: none; }
+  body.final-alert .final-alert-count { opacity: 0.9; }
+  .tape-head { transition: none; }
+  .automaton.final::before { animation: none; box-shadow: inset 0 0 0 8px var(--bad); }
+  .automaton.final .automaton-button { animation: none; }
+  .automaton.final .final-count { opacity: 0.9; }
+}
+
+/* ------------------------------------------------------------ proyector */
+/* El suelo recorta los escalones: al entrar al ranking final suben desde debajo (transitions.js). */
+.podium { display: flex; justify-content: center; align-items: flex-end; gap: 1rem; padding-top: 1.5rem; overflow: hidden; border-bottom: var(--line) solid var(--ink); }
+.podium .step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  width: 28%;
+  padding: 1rem;
+  border: var(--line) solid var(--ink);
+  border-bottom: 0;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: var(--team);
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 2px 0 rgb(28 22 64 / 0.35);
+  box-shadow: 5px 0 0 var(--ink);
+}
+.podium .step .team-chip { font-family: var(--display); font-weight: 400; font-size: 1.3rem; overflow-wrap: anywhere; }
+.podium .step .mono { font-family: var(--display); }
+
+/* Ranking: una línea por equipo (medalla, nombre, fuego, estrella y barra). La barra mide el total y
+   tiene dos tramos: los puntos del juego (color del equipo) y el pozo de estrellas (amarillo). El total
+   va al final de la barra. */
+.rank-bars { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.45rem; }
+.rank-bars li { display: grid; grid-template-columns: 1.8rem minmax(0, 6.5rem) 1.5rem 1.6rem minmax(0, 1fr) 2.2rem; align-items: center; gap: 0.55rem; }
+.medal { display: grid; place-items: center; width: 1.8rem; height: 1.8rem; border: var(--line) solid var(--ink); border-radius: 50%; background: var(--surface); font-family: var(--display); font-size: 0.95rem; }
+.medal.m1 { background: var(--sun); }
+.medal.m2 { background: #dfe3ee; }
+.medal.m3 { background: #f3b98a; }
+.rank-name { font-family: var(--display); font-size: 1rem; line-height: 1.05; overflow-wrap: anywhere; }
+.rank-bars .streak-fire { width: 1.5rem; height: 1.8rem; }
+.rank-bars .star-svg { width: 1.6rem; height: 1.6rem; }
+.rank-bars .star-meter .star-badge { display: none; } /* las estrellas completas ya se ven en la barra */
+.rank-track { display: flex; align-items: center; gap: 0.45rem; height: 1.5rem; min-width: 0; }
+.rank-bar { display: flex; height: 100%; min-width: 0.9rem; }
+.rank-game, .rank-stars { height: 100%; border: var(--line) solid var(--ink); box-shadow: 0 3px 0 var(--ink); }
+.rank-game { border-radius: 10px; background: var(--team); }
+.rank-game:not(:last-child) { border-radius: 10px 0 0 10px; }
+.rank-stars { display: flex; align-items: center; justify-content: center; gap: 2px; overflow: hidden; border-left: 0; border-radius: 0 10px 10px 0; background: var(--sun); font-family: var(--display); font-size: 0.7rem; white-space: nowrap; }
+.rank-stars .star-svg { width: 0.95rem; height: 0.95rem; }
+.rank-score { flex: none; font-family: var(--display); font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+.rank-delta { font-size: 0.7rem; text-align: center; }
+
+/* Resultado de la pregunta en el proyector: sin los renglones de equipos, las opciones ocupan el
+   alto y el conteo dice «3 equipos». */
+.party .q-result .options-grid .option { min-height: 6.8rem; font-size: 1.15rem; }
+.party .q-result .option-count { font-family: var(--display); font-weight: 400; font-size: 0.95rem; padding: 2px 12px; }
+
+/* ------------------------------------------------------------ transiciones entre fases (transitions.js) */
+/* Copia de la pantalla anterior mientras sus piezas caen, detrás de la nueva. */
+.phase-ghost { position: absolute; z-index: -1; margin: 0; pointer-events: none; }
+.party .phase-head h1 { transform-origin: left center; }
+
+/* Respuesta correcta: sello ✓ en la esquina. */
+.party .option.correct { position: relative; }
+.option-stamp {
+  position: absolute;
+  top: -0.7rem;
+  right: -0.6rem;
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border: var(--line) solid var(--ink);
+  border-radius: 50%;
+  background: var(--ok);
+  color: #fff;
+  box-shadow: 2px 2px 0 var(--ink);
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1;
+}
+/* Resultado en el celular: las cuatro opciones, más bajas que al responder. */
+.party .result-options .option { min-height: 64px; }
+
+/* Cambio de ronda: el autómata en grande sobre toda la pantalla. */
+.round-change {
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  padding: var(--gutter);
+  background: var(--ink);
+  color: #fff;
+  text-align: center;
+  pointer-events: none;
+}
+.rc-automaton { position: relative; display: flex; align-items: center; }
+.rc-state {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border: var(--line) solid #fff;
+  border-radius: 50%;
+  font-family: var(--display);
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: background 0.25s, color 0.25s, box-shadow 0.25s;
+}
+.rc-state.done { background: #fff; color: var(--ink); }
+.rc-state.now { background: var(--sun); color: var(--ink); box-shadow: 0 0 0 4px var(--ink), 0 0 0 7px #fff; }
+.rc-arrow { position: relative; flex: none; width: 2rem; height: max(4px, 0.15rem); margin: 0 0.9rem 0 0.45rem; background: #fff; }
+.rc-arrow.rc-start { width: 1.4rem; }
+.rc-arrow::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -0.55rem;
+  border-style: solid;
+  border-width: 0.45rem 0 0.45rem 0.55rem;
+  border-color: transparent transparent transparent #fff;
+  translate: 0 -50%;
+}
+.rc-arrow.todo { background: repeating-linear-gradient(90deg, rgb(255 255 255 / 0.5) 0 5px, transparent 5px 9px); }
+.rc-arrow.todo::after { border-left-color: rgb(255 255 255 / 0.5); }
+.rc-fill { position: absolute; inset: 0; background: #fff; transform: scaleX(0); transform-origin: left; }
+.rc-token { position: absolute; width: 1.25rem; height: 1.25rem; translate: -50% -50%; border: 3px solid #fff; border-radius: 50%; background: var(--team); }
+.rc-title { font-family: var(--display); font-weight: 400; font-size: 2.2rem; line-height: 1; color: var(--sun); }
+.rc-formula { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 0.85rem; color: #c9c2f2; }
+
+/* Ranking final: ceros, unos y símbolos cayendo sobre toda la pantalla. */
+.confetti { position: fixed; inset: 0; z-index: 9; overflow: hidden; pointer-events: none; }
+.confetti span { position: absolute; top: -2.5rem; font-family: var(--display); line-height: 1; text-shadow: 0 0.12em 0 var(--ink); }
+
+/* Proyector mientras los equipos responden, eligen o confirman: la cinta se lee sola bajo el
+   cabezal y solo se dice cuántos equipos faltan. */
+.waiting { display: flex; flex-direction: column; align-items: center; gap: 1.2rem; padding: 1.5rem 0 0.5rem; }
+.waiting-tape {
+  position: relative;
+  width: min(100%, 44rem);
+  padding-top: 1.3rem;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent);
+}
+.waiting-track { display: flex; width: max-content; border-block: var(--line) solid var(--ink); background: var(--surface); animation: waiting-tape linear infinite; }
+.waiting-track span { flex: none; display: grid; place-items: center; width: 2.4rem; height: 2.6rem; border-right: var(--line) solid var(--ink); font-family: var(--display); font-size: 1.3rem; }
+.waiting-head {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  translate: -50% 0;
+  border-style: solid;
+  border-width: 1rem 0.7rem 0;
+  border-color: var(--pink) transparent transparent;
+  animation: waiting-head 0.8s ease-in-out infinite alternate;
+}
+.waiting-label { margin: 0; font-family: var(--display); font-size: 1.6rem; line-height: 1.2; text-align: center; }
+.waiting-count { display: inline-grid; overflow: hidden; vertical-align: bottom; font-size: 2.2em; line-height: 1.1; color: var(--pink); text-shadow: 0 0.06em 0 var(--ink); }
+.waiting-count span { grid-area: 1 / 1; }
+@keyframes waiting-tape { to { transform: translateX(-50%); } }
+@keyframes waiting-head { to { transform: translateY(0.3rem); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .rounds-track, .rounds-token { transition: none; }
+  .waiting-track, .waiting-head { animation: none; }
+}
+
+/* ------------------------------------------------------------ estrellas y Duelo */
+.party .star-badge, .party .fragment-tag { border: 2px solid var(--ink); font-family: var(--display); font-weight: 400; }
+
+/* Duelo (duel.js, rediseño): círculos de los equipos sin recuadros, cartas de cartón y el «VS».
+   Medidas en rem: el proyector tiene la letra al doble, así que todo crece con él. */
+.duel { align-items: center; gap: 0.9rem; text-align: center; }
+.duel-screen { min-height: 60vh; justify-content: center; }
+.dl-ball { width: 2.2rem; height: 2.2rem; }
+.dl-ball.sm { width: 1.6rem; height: 1.6rem; box-shadow: 2px 2px 0 var(--ink); }
+.dl-ball.lg { width: 3.6rem; height: 3.6rem; box-shadow: 4px 4px 0 var(--ink); }
+.dl-ball.xl { width: 5rem; height: 5rem; box-shadow: 5px 5px 0 var(--ink); }
+.dl-ball.off { filter: grayscale(1) brightness(1.3); opacity: 0.55; }
+.dl-ball .crown { position: absolute; top: -40%; left: 50%; translate: -50% 0; width: 62%; }
+.dl-balls { display: inline-flex; align-items: center; gap: 0.4rem; }
+.dl-plus { font-family: var(--display); font-size: 1.4rem; color: var(--muted); }
+.dl-kind { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.15rem 0.85rem 0.15rem 0.3rem; border: 2.5px solid var(--ink); border-radius: 999px; background: var(--sun); box-shadow: 0 3px 0 var(--ink); font-family: var(--display); font-size: 0.95rem; white-space: nowrap; }
+.dl-kind-art { display: inline-block; width: 1.6rem; height: 1.6rem; }
+.dl-kind-art svg, .dl-art svg, .dl-history-art svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.dl-of { font-family: "Nunito", system-ui, sans-serif; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.dl-face { display: flex; align-items: center; justify-content: center; gap: 0.6rem 1.4rem; width: 100%; }
+.dl-side { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 0.35rem; }
+.dl-side.out { opacity: 0.5; }
+.dl-name { margin: 0; font-family: var(--display); font-size: 1.7rem; line-height: 1.05; text-wrap: balance; }
+.dl-role { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.dl-vs { flex: none; font-family: var(--display); font-size: 3.2rem; line-height: 1; color: var(--pink); -webkit-text-stroke: 2px var(--ink); text-shadow: 0 4px 0 var(--ink); rotate: -8deg; }
+.dl-vs.small { font-size: 1.7rem; -webkit-text-stroke: 1.5px var(--ink); text-shadow: 0 3px 0 var(--ink); }
+.dl-stake { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.35rem 0.9rem; border: var(--line) solid var(--ink); border-radius: 14px; background: var(--surface); box-shadow: var(--lift); font-weight: 800; }
+.dl-stake-label { font-size: 0.66rem; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.dl-stake .star-meter > .star-svg, .dl-line-stake .star-meter > .star-svg { width: 1.5rem; height: 1.5rem; }
+.dl-note { margin: 0; font-weight: 800; color: var(--muted); text-wrap: balance; }
+.dl-label { margin: 0; font-size: 0.8rem; font-weight: 900; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+.dl-big { margin: 0; font-family: var(--display); font-size: 1.7rem; line-height: 1.1; text-wrap: balance; }
+
+/* Turno: los dos celulares de cada equipo; el que elige, en amarillo. */
+.dl-turn { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; font-size: 0.75rem; font-weight: 900; color: var(--muted); }
+.dl-pips { display: flex; align-items: center; gap: 0.5rem; }
+.dl-pip-team { display: flex; align-items: center; gap: 0.2rem; }
+.dl-pip-dot { width: 0.6rem; height: 0.6rem; border: 2px solid var(--ink); border-radius: 50%; background: var(--team); }
+.dl-pip { display: grid; place-items: center; width: 0.85rem; height: 1.25rem; border: 2.5px solid var(--ink); border-radius: 4px; background: var(--surface); color: var(--ink); font: 400 0.55rem var(--display); font-style: normal; }
+.dl-pip.on { background: var(--sun); box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--ink); }
+.dl-swap { color: var(--pink); }
+
+/* Mano: la carta de cada lado y el revelado. */
+.dl-hand { display: flex; align-items: baseline; gap: 0.5rem; margin: 0; font-family: var(--display); font-size: 1.5rem; }
+.dl-hand small { font-family: "Nunito", system-ui, sans-serif; font-size: 0.85rem; font-weight: 900; color: var(--muted); }
+.dl-slot { position: relative; isolation: isolate; display: grid; place-items: center; width: 4.6rem; height: 4.6rem; }
+.dl-art { display: block; width: 100%; height: 100%; }
+.dl-slot.won::before { content: ""; position: absolute; inset: 0; z-index: -1; border: var(--line) solid var(--ink); border-radius: 50%; background: var(--sun); box-shadow: 0 4px 0 var(--ink); }
+.dl-slot.lost { filter: grayscale(1); opacity: 0.45; rotate: 14deg; }
+.dl-slot.bob .dl-art, .dl-big-art.bob .dl-art { animation: dl-bob 0.9s ease-in-out infinite; animation-delay: var(--bob-delay, 0ms); }
+.dl-sticker { position: absolute; top: 0; right: -0.6rem; padding: 0 0.45rem; border: 2.5px solid var(--ink); border-radius: 9px; background: var(--ok); color: #fff; font-family: var(--display); font-size: 0.8rem; rotate: 8deg; box-shadow: 2px 2px 0 var(--ink); }
+.dl-sticker.auto { background: var(--muted); }
+.dl-who { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--display); font-size: 1.05rem; line-height: 1.1; }
+.dl-who-name { min-width: 0; }
+.dl-stamp { flex: none; padding: 0.15rem 0.7rem; border: var(--line) solid var(--ink); border-radius: 12px; background: var(--sun); box-shadow: 0 4px 0 var(--ink); font-family: var(--display); font-size: 1.6rem; rotate: -6deg; white-space: nowrap; }
+.dl-why { margin: 0; font-family: var(--display); font-size: 1.25rem; }
+.dl-history { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 0.3rem 0.9rem; margin: 0; padding: 0.15rem 0.7rem; border: 2px solid rgb(28 22 64 / 0.25); border-radius: 999px; font-size: 0.75rem; font-weight: 900; color: var(--muted); }
+.dl-history-hand { display: inline-flex; align-items: center; gap: 0.3rem; }
+.dl-history-art { display: inline-block; width: 1.1rem; height: 1.1rem; }
+
+/* Cartelera. */
+.dl-lineup { display: grid; gap: 0.6rem; margin: 0; padding: 0; list-style: none; }
+.dl-entry { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.4rem 0.9rem; padding: 0.45rem 0.9rem; border: var(--line) solid var(--ink); border-radius: 16px; background: var(--surface); box-shadow: var(--lift); }
+.dl-entry.mine { background: #fff3c4; }
+.dl-line-num { display: grid; place-items: center; width: 1.7rem; height: 1.7rem; border: 2.5px solid var(--ink); border-radius: 50%; background: var(--sun); font-family: var(--display); }
+.dl-line-face { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.3rem 0.6rem; }
+.dl-who.inline { font-size: 1rem; }
+.dl-line-note { margin: 0; font-weight: 900; }
+
+/* Resultado. */
+.dl-champ { padding-top: 1.4rem; }
+.dl-loot { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem; margin: 0; font-family: var(--display); font-size: 1.25rem; }
+.dl-loot .star-meter > .star-svg { width: 2rem; height: 2rem; }
+.dl-loot.big .star-meter > .star-svg { width: 3.4rem; height: 3.4rem; }
+.dl-loot .good, .dl-verdict.good { color: var(--ok); }
+.dl-points { margin: 0; font-family: var(--display); font-size: 2.2rem; line-height: 1; color: var(--ok); }
+.dl-points.dim { color: var(--muted); }
+
+/* Celular. */
+.duel-phone { gap: 0.8rem; padding-top: 0.3rem; }
+.dl-verdict { margin: 0; font-family: var(--display); font-size: 2rem; line-height: 1.05; text-wrap: balance; }
+.dl-verdict.go { font-size: 2.1rem; color: var(--pink); -webkit-text-stroke: 1px var(--ink); text-shadow: 0 3px 0 var(--ink); }
+.dl-verdict.dim { color: var(--muted); }
+.dl-row { display: flex; align-items: center; justify-content: center; gap: 0.4rem 0.9rem; width: 100%; }
+.dl-row .dl-who { flex: 1 1 0; min-width: 0; flex-direction: column; text-align: center; }
+.dl-row.small .dl-who { font-size: 0.95rem; }
+.dl-line-stake { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.4rem; margin: 0; font-weight: 800; text-wrap: balance; }
+.dl-line { margin: 0; font-family: var(--display); font-size: 1.15rem; }
+.dl-tag { margin: 0; padding: 0.35rem 0.9rem; border: 2.5px solid var(--ink); border-radius: 12px; background: var(--sun); box-shadow: 0 3px 0 var(--ink); font-weight: 900; }
+.dl-tag.other { background: var(--surface); }
+.dl-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; width: 100%; }
+.party .dl-option { display: flex; flex-direction: column; align-items: center; gap: 0.15rem; min-height: 0; padding: 0.7rem 0.2rem 0.55rem; background: var(--surface); font-size: 1.1rem; }
+.dl-option .dl-art { width: 4.2rem; height: 4.2rem; }
+.dl-big-art { width: 8rem; height: 8rem; }
+.dl-pair { display: flex; align-items: center; justify-content: center; gap: 0.6rem; }
+.dl-card { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
+.dl-card-name { font-family: var(--display); font-size: 1rem; }
+.duel-screen .dl-slot { width: 6.4rem; height: 6.4rem; }
+.duel-phone .dl-slot { width: 6rem; height: 6rem; }
+.duel-phone .dl-loot.big .star-meter > .star-svg { width: 4.4rem; height: 4.4rem; }
+.duel-phone .dl-points { font-size: 3rem; }
+.duel-phone .dl-entry { padding: 0.5rem 0.6rem; }
+
+@keyframes dl-bob { 0%, 100% { transform: translateY(0); } 45% { transform: translateY(-14%) rotate(-4deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .dl-slot.bob .dl-art, .dl-big-art.bob .dl-art { animation: none; }
+}
+
+/* ------------------------------------------------------------ sala con registro (taller.js) */
+.tl { gap: 14px; }
+.tl h2 { margin: 0; font-size: 1.3rem; }
+.tl-lead { margin: 0; font-size: 1.02rem; }
+.tl-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px;
+  border: var(--line) solid var(--ink);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--lift);
+}
+.tl-card > p { margin: 0; }
+.tl-field { display: grid; gap: 6px; }
+.tl-field > span { font-size: 0.78rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.party .tl .input { min-height: 48px; border: var(--line) solid var(--ink); border-radius: 12px; background: #fff; font-size: 1.05rem; font-weight: 700; }
+.party .tl .input::placeholder { color: var(--muted); font-weight: 600; opacity: 0.75; }
+.tl-members { display: grid; gap: 8px; }
+.tl-member { display: grid; grid-template-columns: 1.4rem minmax(0, 1fr); align-items: center; gap: 8px; }
+.tl-member b { font-family: var(--display); font-weight: 400; font-size: 1.1rem; text-align: center; }
+.tl-field .button.small { justify-self: start; }
+/* Tarjeta de un equipo en la lista: el nombre, sus integrantes y sus dos celulares. */
+.tl-names { font-size: 0.85rem; font-weight: 800; line-height: 1.25; opacity: 0.95; }
+.party .teams-grid .tl-team.full { opacity: 0.6; }
+.tl .teams-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr)); }
+/* El equipo propio. */
+.tl-mine { border-left: 14px solid var(--team); }
+.tl-name { font-family: var(--display); font-weight: 400; font-size: 1.6rem; line-height: 1.05; overflow-wrap: anywhere; }
+.tl-people { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+.tl-people li { padding: 2px 11px; border: 2.5px solid var(--ink); border-radius: 999px; background: var(--paper); font-size: 0.9rem; font-weight: 800; }
+.tl-phones { display: flex; align-items: center; gap: 10px; margin: 0; font-weight: 800; }
+.tl-phones .slot { width: 18px; height: 18px; border: 2.5px solid var(--ink); }
+.tl-phones .slot.filled { background: var(--team); border-color: var(--ink); }
+.tl-qr { justify-items: center; text-align: center; }
+.tl-qr img { width: min(64vw, 240px); height: auto; aspect-ratio: 1; padding: 8px; border: var(--line) solid var(--ink); border-radius: 14px; background: #fff; }
+.tl-actions { justify-content: center; }
+/* El taller: instrucciones y los dos ejercicios. Un ejercicio reparte el alto de la pantalla: arriba
+   por dónde van, en el medio el tablero (diagrama y pila, que ocupan lo que sobre) y abajo el aviso
+   y los botones, al alcance del pulgar. */
+.tl-eyebrow { margin: 0; font-size: 0.75rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.tl-link { align-self: center; padding: 6px 10px; border: 0; background: none; color: var(--ink); font-weight: 900; font-size: 0.9rem; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.tl-back { align-self: flex-start; }
+.tl-keys-help { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.tl-keys-help li { display: grid; grid-template-columns: 2rem minmax(0, 1fr); align-items: center; gap: 10px; }
+.tl-keys-help i, .tl-key i { display: grid; place-items: center; width: 2rem; height: 2rem; border: 2.5px solid var(--ink); border-radius: 9px; background: var(--sun); font-style: normal; font-weight: 900; font-size: 1.05rem; line-height: 1; }
+.fill > .tl { flex: 1 1 auto; min-height: 0; }
+.tl-ex { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+.tl-ex-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 1.6rem; }
+.tl-ex-head .tl-link { padding: 0; }
+.tl-dots { display: flex; gap: 5px; }
+.tl-dots i { width: 14px; height: 14px; border: 2.5px solid var(--ink); border-radius: 50%; background: var(--surface); }
+.tl-dots i.on { background: var(--ink); }
+.tl-dots i.now { background: var(--sun); }
+.tl-taperow { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
+.tz-tape.tl-tape { margin-top: 14px; min-width: 0; }
+.tz-tape.tl-tape span { width: min(8.6vw, 2.1rem); }
+.tz-tape.tl-tape .tl-tape-end { width: 2rem; background: var(--paper); font-family: "Nunito", system-ui, sans-serif; font-size: 0.6rem; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.tl-ticket { flex: none; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; line-height: 1.2; text-align: center; }
+.tl-taperow .tl-ticket b { display: block; }
+.tl-goal { margin: 0; font-size: 0.98rem; font-weight: 700; line-height: 1.35; }
+.tl-goal .tl-ticket { display: inline-block; margin-top: 2px; }
+.tl-board { flex: 1 1 0; min-height: 220px; }
+.tl-board .tz-svg { max-height: 420px; }
+.tl-msg { margin: 0; min-height: 3.5em; padding: 8px 12px; border: 2.5px solid var(--ink); border-radius: 12px; background: var(--surface); font-size: 0.9rem; font-weight: 700; line-height: 1.32; }
+.tl-msg.bad { background: #ffe3e6; }
+.tl-msg.good { background: #d9f7e6; }
+.tl-msg.grey { background: #e9e6f5; }
+.tl-msg strong { font-weight: 900; }
+.tl-foot { display: grid; gap: 8px; }
+.tl-ask { margin: 0; font-size: 1rem; font-weight: 900; }
+.tl-pad { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tl-key {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 0 12px;
+  border: var(--line) solid var(--ink);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--lift);
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: 1.05rem;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.tl-key:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+.tl-key.pending { opacity: 0.6; }
+.tl-key.yes { background: #c9f2dc; justify-content: center; }
+.tl-key.no { background: #ffe3e6; justify-content: center; }
+.tl-key.wide { grid-column: 1 / -1; justify-content: center; background: var(--sun); }
+.tl-key.wide.plain, .tl-key.plain { background: var(--surface); }
+.tl-key.center { justify-content: center; }
+.tl-key:disabled { opacity: 0.4; box-shadow: 0 2px 0 var(--ink); cursor: default; }
+.tl-key.wrong { background: #ffe3e6; animation: tl-shake 0.36s ease-out; }
+/* Repaso, al terminar el taller: lo que les costó y las ideas del tema. */
+.tl-slips { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.tl-slips li { display: grid; gap: 2px; padding: 8px 12px; border: 2.5px solid var(--ink); border-radius: 12px; background: #fff3c4; font-size: 0.92rem; line-height: 1.3; }
+.tl-slips strong { font-weight: 900; }
+.tl-notes { margin: 0; display: grid; gap: 4px; font-size: 0.95rem; line-height: 1.35; }
+.tl-notes dt { margin-top: 6px; font-family: var(--display); font-size: 1.05rem; }
+.tl-notes dt:first-child { margin-top: 0; }
+.tl-notes dd { margin: 0; font-weight: 700; }
+@keyframes tl-shake { 20% { transform: translateX(-7px); } 45% { transform: translateX(6px); } 70% { transform: translateX(-4px); } }
+/* Ejercicio 2: las fichas de la transición y las cadenas de prueba. */
+.tl-build { display: grid; gap: 6px; }
+.tl-row { display: grid; grid-template-columns: 4.3rem minmax(0, 1fr); align-items: center; gap: 8px; }
+.tl-cap { font-size: 0.7rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.tl-chips { display: flex; gap: 6px; }
+.tl-chip { flex: 1 1 0; min-width: 0; min-height: 40px; padding: 0; border: 2.5px solid var(--ink); border-radius: 10px; background: var(--surface); box-shadow: 0 3px 0 var(--ink); color: var(--ink); font-size: 1rem; font-weight: 900; cursor: pointer; touch-action: manipulation; }
+.tl-chip[aria-pressed="true"] { background: var(--pink); transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
+.tl-chip.pending, .tl-test.pending { opacity: 0.6; }
+.tl-tests { display: flex; flex-wrap: wrap; gap: 6px; }
+.tl-test { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 8px 0 12px; border: 2.5px solid var(--ink); border-radius: 999px; color: var(--ink); font-size: 0.95rem; font-weight: 900; cursor: pointer; touch-action: manipulation; }
+.tl-test.pass { background: #d9f7e6; }
+.tl-test.fail { background: #ffe3e6; }
+.tl-test i { display: grid; place-items: center; width: 19px; height: 19px; border-radius: 50%; color: #fff; font-style: normal; font-size: 0.72rem; line-height: 1; }
+.tl-test.pass i { background: var(--ok); }
+.tl-test.fail i { background: var(--bad); }
+.tl-test[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--paper), 0 0 0 5.5px var(--ink); }
+.tl-solved { display: grid; gap: 8px; text-align: center; }
+.tl-solved strong { font-family: var(--display); font-weight: 400; font-size: 1.5rem; color: var(--ok); }
+/* La transición por armar: un arco punteado hasta que tenga sus tres fichas. */
+.party .tz-edge.hole { stroke: #c8175d; stroke-dasharray: 6 5; }
+.party .tz-edge.hole.set { stroke-dasharray: none; }
+.party .tz-edge.hole.used { stroke-width: 4; }
+.party .tz-arrow.hole { fill: #c8175d; }
+.party .tz-label.hole { fill: #c8175d; font-weight: 900; }
+.tl-focus .rounds-slot { display: none; }
+@media (max-height: 760px) {
+  .tl-ex { gap: 7px; }
+  .tl-board { min-height: 180px; }
+  .tl-key { min-height: 50px; }
+  .tl-msg { font-size: 0.85rem; min-height: 3.3em; padding: 6px 10px; }
+  .tl-chip, .tl-test { min-height: 36px; }
+  .tl-foot { gap: 6px; }
+}
+/* Lo que se celebra: el autómata reparado y, en el proyector, un equipo recién registrado. */
+.tl-solved strong { animation: tl-pop 0.45s cubic-bezier(.34, 1.56, .64, 1); }
+.tl-new { animation: tl-pop 0.5s cubic-bezier(.34, 1.56, .64, 1); }
+@keyframes tl-pop { from { transform: scale(0.6); opacity: 0; } }
+.tl .demo-box { align-self: center; width: min(100%, 24rem); }
+@media (prefers-reduced-motion: reduce) {
+  .tl-key.wrong, .tl-solved strong, .tl-new { animation: none; }
+}
+
+/* Proyector: los equipos registrados, en tarjetas anchas para que quepan el nombre y los integrantes.
+   El sello «¡Listos!» va abajo, para no tapar el nombre. */
+.teams-grid.tl-grid { grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); align-items: start; }
+.party .tl-grid .sticker { top: auto; right: 0.5rem; bottom: 0.5rem; font-size: 0.8rem; transform: rotate(-5deg); box-shadow: 2px 2px 0 var(--ink); }
+/* Proyector: los pasos del registro. */
+.tl-steps { margin: 0; padding-left: 1.4em; display: grid; gap: 0.3em; font-weight: 700; }
+.tl-steps li::marker { font-family: var(--display); font-weight: 400; }

@@ -1,0 +1,93 @@
+{
+  "nota": "Preguntas de EJEMPLO para probar el juego. Reemplácenlas por las 11 de la exposición: 'correct' es el índice (0-3) de la opción correcta; 'image' es opcional y apunta a un archivo dentro de client/assets/ (por ejemplo 'questions/q1.png'). El tiempo para responder sale de la dificultad (game.json, questions.difficulties: básica 30 s, intermedia 45 s, difícil 60 s); para cambiarlo en una sola pregunta, agréguenle 'timeLimitMs' en milisegundos (por ejemplo \"timeLimitMs\": 40000).",
+  "questions": [
+    {
+      "id": "q1",
+      "difficulty": "basica",
+      "statement": "¿Qué componente NO forma parte de la definición formal de un autómata finito determinista (AFD)?",
+      "image": null,
+      "options": ["Un conjunto finito de estados", "Una función de transición", "Una pila", "Un conjunto de estados de aceptación"],
+      "correct": 2
+    },
+    {
+      "id": "q2",
+      "difficulty": "basica",
+      "statement": "Un AFD acepta una cadena si, al terminar de leerla, se encuentra en…",
+      "image": null,
+      "options": ["El estado inicial", "Un estado de aceptación", "Cualquier estado", "Un estado sin transiciones salientes"],
+      "correct": 1
+    },
+    {
+      "id": "q3",
+      "difficulty": "basica",
+      "statement": "¿Qué máquina reconoce exactamente los lenguajes libres de contexto?",
+      "image": null,
+      "options": ["Autómata finito determinista", "Máquina de Turing", "Transductor de Mealy", "Autómata de pila no determinista"],
+      "correct": 3
+    },
+    {
+      "id": "q4",
+      "difficulty": "intermedia",
+      "statement": "¿Qué expresión regular describe las cadenas sobre {a, b} que terminan en «ab»?",
+      "image": null,
+      "options": ["(a|b)*ab", "ab(a|b)*", "a*b*", "(ab)*"],
+      "correct": 0
+    },
+    {
+      "id": "q5",
+      "difficulty": "intermedia",
+      "statement": "¿Cuál de estos lenguajes NO es regular?",
+      "image": null,
+      "options": ["Cadenas con un número par de a", "aⁿbⁿ con n ≥ 0", "Cadenas que terminan en b", "Cadenas cuya longitud es múltiplo de 3"],
+      "correct": 1
+    },
+    {
+      "id": "q6",
+      "difficulty": "intermedia",
+      "statement": "Al convertir un AFN de n estados en un AFD con la construcción de subconjuntos, ¿cuántos estados puede tener el AFD en el peor caso?",
+      "image": null,
+      "options": ["n", "2n", "n²", "2ⁿ"],
+      "correct": 3
+    },
+    {
+      "id": "q7",
+      "difficulty": "basica",
+      "statement": "¿Qué herramienta se usa con más frecuencia para demostrar que un lenguaje NO es regular?",
+      "image": null,
+      "options": ["El lema de bombeo", "El teorema de Rice", "La forma normal de Chomsky", "El algoritmo CYK"],
+      "correct": 0
+    },
+    {
+      "id": "q8",
+      "difficulty": "intermedia",
+      "statement": "¿Qué diferencia a una máquina de Mealy de una máquina de Moore?",
+      "image": null,
+      "options": ["La de Mealy no tiene estados", "En la de Mealy la salida depende del estado y de la entrada", "La de Moore usa una pila", "En la de Moore la salida depende solo de la entrada"],
+      "correct": 1
+    },
+    {
+      "id": "q9",
+      "difficulty": "dificil",
+      "statement": "Los lenguajes libres de contexto NO son cerrados bajo…",
+      "image": null,
+      "options": ["La unión", "La concatenación", "La intersección", "La clausura de Kleene"],
+      "correct": 2
+    },
+    {
+      "id": "q10",
+      "difficulty": "dificil",
+      "statement": "¿Cuál de estos problemas es indecidible?",
+      "image": null,
+      "options": ["Saber si un AFD acepta una cadena dada", "Saber si dos AFD aceptan el mismo lenguaje", "Saber si una máquina de Turing se detiene con una entrada dada", "Saber si una gramática libre de contexto genera la cadena vacía"],
+      "correct": 2
+    },
+    {
+      "id": "q11",
+      "difficulty": "dificil",
+      "statement": "Una gramática está en forma normal de Chomsky si todas sus producciones (salvo S → ε) tienen la forma…",
+      "image": null,
+      "options": ["A → BC o A → a", "A → aB o A → a", "A → aα, con α una cadena de variables", "A → α, sin restricciones"],
+      "correct": 0
+    }
+  ]
+}

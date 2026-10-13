@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#efebff">
+  <title>Jugar · Autómatas Party</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="preload" href="/assets/fonts/lilita-one-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/nunito-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/shared/base.css">
+  <link rel="stylesheet" href="/shared/party.css">
+</head>
+<body class="party">
+  <header class="topbar">
+    <span id="team" class="topbar-brand">Autómatas Party</span>
+    <span id="round" class="topbar-note"></span>
+  </header>
+  <div id="rounds" class="rounds-slot"></div>
+  <span id="status" class="chip chip-wait">Conectando…</span>
+  <main>
+    <p id="announce" class="announce" hidden></p>
+    <div id="app" class="stack"></div>
+  </main>
+  <!-- Solo con ?debug: latencia y transporte de la conexión. -->
+  <footer id="net" class="footer muted" hidden></footer>
+  <script type="module" src="/play/play.js"></script>
+</body>
+</html>
